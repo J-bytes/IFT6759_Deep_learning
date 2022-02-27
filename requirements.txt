@@ -1,1 +1,3 @@
-tensorboard
+numpy
+pandas
+#pytorch>=1.10+cu113
