@@ -29,19 +29,19 @@ for image in data["images"] : # boucle sur le fichier json ; liste des images
                         annotation["category"]=category["name"] # add the category key to the dictionnary annnotation
                 new_file_dict=new_file_dict|annotation # merges the dict new_file_dict and annotation CAREFUL the operator | works only in python 3.9
 
-        if "category" in new_file_dict : #empty IS a category
+        if "category" in new_file_dict : #empty IS a category but some image dont have any label??
             if location in new_dict :
-                new_dict[location].append(new_file_dict)
+                new_dict[location].append(new_file_dict) #keep a dictionnary of every dictionnary for each location
             else :
                 new_dict[location]=[new_file_dict]
         else :
-            os.remove(dst)
+            os.remove(dst) # if image doesnt have label, remove it from the final folder
     except Exception as e :
         print(f"error {e}")
-        f.write(f"{e} : {image['id']}")
+        f.write(f"{e} : {image['id']} \n")
 
 
-for key in new_dict :
+for key in new_dict : # for each location write a new json in the location's folder
     # the json file where the output must be stored
     out_file = open(f"data/images/{key}/annotation.json", "w")
     location=new_dict[key]
