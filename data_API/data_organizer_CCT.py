@@ -7,14 +7,14 @@ import os
 f=open("cct_transform_log.txt","w")
 data=json.load(open("caltech_bboxes_20200316.json"))
 image_final_directory="data/images"
-image_initial_direcory="/mnt/g/cct_images" # full path required
+image_initial_directory="/mnt/g/cct_images" # full path required
 if not os.path.exists(image_final_directory):
     os.makedirs(image_final_directory)
 new_dict={}
 for image in data["images"] : # boucle sur le fichier json ; liste des images
     try :
         location=image["location"]
-        src=f"{image_initial_direcory}/{image['file_name']}" #fichier source
+        src=f"{image_initial_directory}/{image['file_name']}" #fichier source
         dst=f"{image_final_directory}/{location}/{image['file_name']}" # destinatioon ou copier l'image "data/images/location/image.png
         if not os.path.exists(f"{image_final_directory}/{location}") : #create folder if location does not exist
             os.makedirs(f"{image_final_directory}/{location}")
