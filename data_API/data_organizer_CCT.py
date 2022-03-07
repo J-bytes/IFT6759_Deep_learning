@@ -3,6 +3,7 @@ import numpy as np
 import json
 import shutil
 import os
+import tqdm
 #data=json.load(open("data/caltech_images_20210113.json")) for all images
 f=open("cct_transform_log.txt","w")
 data=json.load(open("caltech_bboxes_20200316.json"))
@@ -11,7 +12,7 @@ image_initial_directory="/mnt/g/cct_images" # full path required
 if not os.path.exists(image_final_directory):
     os.makedirs(image_final_directory)
 new_dict={}
-for image in data["images"] : # boucle sur le fichier json ; liste des images
+for image in tqdm.tqdm(data["images"]) : # boucle sur le fichier json ; liste des images
     try :
         location=image["location"]
         src=f"{image_initial_directory}/{image['file_name']}" #fichier source
@@ -19,7 +20,7 @@ for image in data["images"] : # boucle sur le fichier json ; liste des images
         if not os.path.exists(f"{image_final_directory}/{location}") : #create folder if location does not exist
             os.makedirs(f"{image_final_directory}/{location}")
 
-        shutil.copy(src,dst)
+
         #os.remove(src) # remove the original to not overload disk space
         new_file_dict=image # copy the dictionnary with the different PARTIAL info about the image
         for annotation in data["annotations"] : #boucle sur la liste des annotations
@@ -30,14 +31,14 @@ for image in data["images"] : # boucle sur le fichier json ; liste des images
                 new_file_dict=new_file_dict|annotation # merges the dict new_file_dict and annotation CAREFUL the operator | works only in python 3.9
 
         if "category" in new_file_dict : #empty IS a category but some image dont have any label??
+            shutil.copy(src, dst) # we now copy the file to the destination
             if location in new_dict :
                 new_dict[location].append(new_file_dict) #keep a dictionnary of every dictionnary for each location
             else :
                 new_dict[location]=[new_file_dict]
-        else :
-            os.remove(dst) # if image doesnt have label, remove it from the final folder
+
     except Exception as e :
-        print(f"error {e}")
+        #print(f"error {e}")
         f.write(f"{e} : {image['id']} \n")
 
 
