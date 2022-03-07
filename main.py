@@ -4,18 +4,18 @@ import torch
 import tqdm
 import copy
 from comet_ml import Experiment
-
+import os
 
 #-----local imports---------------------------------------
 from training.training import training
-from training.dataloaders.galaxy_dataloader import CustomDataset
-from models.Unet import Unet
+from training.dataloaders.cct_dataloader import CustomImageDataset
+from models.Rcnn import Rcnn
 
 
 #-------data initialisation-------------------------------
-data_path="/mnt/g/data_galaxies/expanded_dataset_v010.h5"
-train_dataset=CustomDataset(data_path, method="train", val_size=0.2, test_size=0.7)
-val_dataset=copy.copy(train_dataset)
+data_path=f"{os.getcwd()}/IFT6759_Deep_learning/data/images"
+train_dataset=CustomImageDataset(data_path,locations=list(range(0,40)))
+val_dataset=CustomImageDataset(data_path,locations=list(range(40,50)))
 val_dataset.method="val"
 training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=4,pin_memory=True)
 validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=4, shuffle=True, num_workers=4,pin_memory=True)
@@ -27,7 +27,8 @@ else :
     device="cpu"
     warnings.warn("No gpu is available for the computation")
 
-model=Unet(depth=2,channels=[1,2,3]).to(device)
+#image size input 600x480
+model=Rcnn(features=[7245,50,22],channels=[3,64,32,16])
 optimizer=torch.optim.AdamW(model.parameters())
 criterion=torch.nn.KLDivLoss() # to replace
 print("The model has now been successfully loaded into memory")
