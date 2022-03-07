@@ -1,3 +1,5 @@
+import sys
+
 import torch
 from torch.utils.data import Dataset
 import os
@@ -5,6 +7,8 @@ from imageio import imread
 #import re
 import json
 import numpy as np
+import cv2 as cv
+import re
 class CustomImageDataset(Dataset):
     def __init__(self, img_dir,locations, transform=None):
         self.locations=locations # feed only select locations
@@ -26,7 +30,7 @@ class CustomImageDataset(Dataset):
 
         self.categories={}
 
-        data=json.load(open(f"{os.getcwd()}/IFT6759_Deep_learning/data_API/caltech_bboxes_20200316.json"))
+        data=json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
         for ex,category in enumerate(data["categories"]) :
             self.categories[category["name"]]=ex
     def __len__(self):
@@ -34,26 +38,30 @@ class CustomImageDataset(Dataset):
 
     def label_transform(self,label): # encode one_hot
 
-        one_hot= np.zeros((22))
+        one_hot= torch.zeros((22))
         one_hot[self.categories[label]]=1
-        return one_hot
+        return one_hot.float()
     def __getitem__(self, idx):
         img_path=self.files[idx]
-        location=img_path[len(self.img_dir)+1:len(self.img_dir)+3]
-        loc_len=4
-        if location[1]=="/" :
-            location=location[0]
-            loc_len=3
+        patterns=img_path.split("/")[::-1]
+        #location=img_path[len(self.img_dir)+1:len(self.img_dir)+3]
+        location=patterns[1]
 
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
         annotations=json.load(open(self.annotation_files[location]))
-        image = imread(img_path)
-
+        image = cv.resize(cv.imread(img_path),(600,480)) #TODO verify dimension
+        image=np.reshape(image,(3,600,480))
         if self.transform:
             image = self.transform(image)
 
-        image=torch.tensor(image)
-        img_ann = annotations[img_path[len(self.img_dir)+loc_len:-4]+".jpg"]
+        image=torch.tensor(image).float()
+        try :
+            img_ann = annotations[patterns[0]]
+        except Exception as e:
+            print(e,"\n")
+            print(location)
+            sys.exit()
+
         label=self.label_transform(img_ann["category"])
         bbox=img_ann["bbox"]
 

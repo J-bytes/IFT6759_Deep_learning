@@ -58,7 +58,7 @@ class Rcnn(torch.nn.Module):
 
         for conv in self.conv :
             x=conv(x)
-        x=x.flatten()
+        x=x.flatten(start_dim=1)
         for linear in self.linear :
             x=linear(x)
 
