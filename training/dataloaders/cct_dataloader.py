@@ -11,6 +11,8 @@ import cv2 as cv
 import re
 class CustomImageDataset(Dataset):
     def __init__(self, img_dir,locations, transform=None):
+        self.largeur = 600
+        self.hauteur = 480
         self.locations=locations # feed only select locations
         self.img_dir = img_dir
         self.transform = transform
@@ -49,8 +51,29 @@ class CustomImageDataset(Dataset):
 
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
         annotations=json.load(open(self.annotation_files[location]))
-        image = cv.resize(cv.imread(img_path),(600,480)) #TODO verify dimension
-        image=np.reshape(image,(3,600,480))
+        image = cv.resize(cv.imread(img_path),(self.largeur, self.hauteur)) #TODO verify dimension
+        annotation = annotations[img_path]
+        bbox = annotation["bbox"]
+        bbox_x0 = bbox[0]
+        bbox_y0 = bbox[1]
+        bbox_width0 = bbox[2]
+        bbox_height0 = bbox[3]
+
+        width_pic = annotation["width"]
+        height_pic = annotation["height"]
+        category_id = annotation["category_id"]
+
+        new_x = (bbox_x0 + bbox_width0 / 2) * self.largeur/width_pic
+        new_y = (bbox_y0 + bbox_height0 / 2) * self.hauteur / height_pic
+
+        new_width = (bbox_width0 * self.largeur)/width_pic
+        new_height = (bbox_height0 * self.hauteur) / height_pic
+        f = open(img_path+".txt", "w+")
+        f.write(category_id + "," + new_x + "," + new_y + "," + new_width + "," + new_height)
+        f.close()
+
+        image=np.reshape(image,(3,self.largeur, self.hauteur))
+
         if self.transform:
             image = self.transform(image)
 

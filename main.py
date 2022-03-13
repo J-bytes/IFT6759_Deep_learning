@@ -13,12 +13,16 @@ from models.Rcnn import Rcnn
 
 
 #-------data initialisation-------------------------------
-data_path=f"{os.getcwd()}/data/data/images"
-train_dataset=CustomImageDataset(data_path,locations=list(range(65,70)))
-val_dataset=CustomImageDataset(data_path,locations=list(range(0,5)))
-val_dataset.method="val"
+print("dd", os.getcwd())
+#data_path=f"{os.getcwd()}/data/data/images"
+# train_dataset=CustomImageDataset(data_path,locations=list(range(65,70)))
+# val_dataset=CustomImageDataset(data_path,locations=list(range(0,5)))
+# val_dataset.method="val"
+# training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
+# validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
+train_dataset=CustomImageDataset(data_path,locations=11)
 training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
-validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
+
 print("The data has now been loaded successfully into memory")
 #-----------model initialisation------------------------------
 if torch.cuda.is_available() :

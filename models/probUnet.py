@@ -12,7 +12,7 @@ class Encoder(torch.nn.Module):
         super().__init__()
 
         #downsampling to latent space
-        self.conv1=
+        # self.conv1=
         self.bn1
 
         self.conv2
@@ -23,7 +23,7 @@ class Encoder(torch.nn.Module):
 
 
         #upsampling
-        self.conv4 =
+        # self.conv4 =
         self.bn4
 
         self.conv5
