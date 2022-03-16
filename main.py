@@ -9,12 +9,12 @@ import os
 #-----local imports---------------------------------------
 from training.training import training
 from training.dataloaders.cct_dataloader import CustomImageDataset
-from models.Rcnn import Rcnn
+#from models.Rcnn import Rcnn
 
 
 #-------data initialisation-------------------------------
 print("dd", os.getcwd())
-#data_path=f"{os.getcwd()}/data/data/images"
+data_path=f"{os.getcwd()}/data/data/images"
 # train_dataset=CustomImageDataset(data_path,locations=list(range(65,70)))
 # val_dataset=CustomImageDataset(data_path,locations=list(range(0,5)))
 # val_dataset.method="val"
@@ -22,7 +22,7 @@ print("dd", os.getcwd())
 # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
 train_dataset=CustomImageDataset(data_path,locations=11)
 training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
-
+validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
 print("The data has now been loaded successfully into memory")
 #-----------model initialisation------------------------------
 if torch.cuda.is_available() :
@@ -32,7 +32,8 @@ else :
     warnings.warn("No gpu is available for the computation")
 
 #image size input 600x480
-model=Rcnn(features=[6300,2,22],channels=[3,64,32,1]).to(device)
+#model=Rcnn(features=[6300,2,22],channels=[3,64,32,1]).to(device)
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s', classes=22).to(device)
 optimizer=torch.optim.AdamW(model.parameters())
 criterion=torch.nn.KLDivLoss() # to replace
 print("The model has now been successfully loaded into memory")

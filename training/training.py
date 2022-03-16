@@ -76,9 +76,9 @@ def validation_loop(model,loader,criterion,device,verbose,epoch,metrics):
 
 
 
-def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5) :
+def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
 
-    epoch,epoch_max=0,150
+    epoch=0
 
 
 
