@@ -107,8 +107,8 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
         train_loss_list.append(train_loss)
         val_loss_list.append(val_loss)
         if experiment :
-            experiment.log_metric("training_loss",train_loss,epoch=epoch)
-            experiment.log_metric("validation_loss", val_loss,epoch=epoch)
+            experiment.log_metric("training_loss",train_loss.tolist(),epoch=epoch)
+            experiment.log_metric("validation_loss", val_loss.tolist(),epoch=epoch)
             for key in metrics_results :
                 experiment.log_metric(key,metrics_results[key],epoch=epoch)
 
@@ -116,8 +116,8 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
 
         if val_loss<best_loss :
             best_loss=val_loss
-            if epoch>10 :   #save the model after XX iterations : TODO : adjust when to save weights
-                torch.save(model.state_dict(), f"models/models_weights/{model._get_name()}_{epoch}.pt")
+            #save the model after XX iterations : TODO : adjust when to save weights
+            torch.save(model.state_dict(), f"models/models_weights/{model._get_name()}_{epoch}.pt")
         else :
             patience-=1
             print("patience has been reduced by 1")

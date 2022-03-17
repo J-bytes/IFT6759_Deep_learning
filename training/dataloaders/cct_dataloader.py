@@ -8,6 +8,7 @@ from imageio import imread
 import json
 import numpy as np
 import cv2 as cv
+from PIL import Image
 import re
 class CustomImageDataset(Dataset):
     def __init__(self, img_dir,locations, transform=None):
@@ -51,8 +52,8 @@ class CustomImageDataset(Dataset):
 
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
         annotations=json.load(open(self.annotation_files[location]))
-        image = cv.resize(cv.imread(img_path),(self.largeur, self.hauteur)) #TODO verify dimension
-        annotation = annotations[img_path]
+        image = cv.imread(img_path) #TODO verify dimension
+        annotation = annotations[patterns[0]]
         bbox = annotation["bbox"]
         bbox_x0 = bbox[0]
         bbox_y0 = bbox[1]
@@ -68,16 +69,20 @@ class CustomImageDataset(Dataset):
 
         new_width = (bbox_width0 * self.largeur)/width_pic
         new_height = (bbox_height0 * self.hauteur) / height_pic
-        f = open(img_path+".txt", "w+")
-        f.write(category_id + "," + new_x + "," + new_y + "," + new_width + "," + new_height)
-        f.close()
+        #f = open(img_path+".txt", "w+")
+        #f.write(category_id + "," + new_x + "," + new_y + "," + new_width + "," + new_height)
+        #f.close()
 
-        image=np.reshape(image,(3,self.largeur, self.hauteur))
+        #image=np.reshape(image,(3,self.largeur, self.hauteur))
+
+
 
         if self.transform:
+            image=Image.fromarray(np.uint8(image))
             image = self.transform(image)
 
-        image=torch.tensor(image).float()
+        #image=torch.tensor(image).float()
+
         try :
             img_ann = annotations[patterns[0]]
         except Exception as e:
@@ -88,4 +93,4 @@ class CustomImageDataset(Dataset):
         label=self.label_transform(img_ann["category"])
         bbox=img_ann["bbox"]
 
-        return image, label#,bbox
+        return image.float(), label#,bbox
