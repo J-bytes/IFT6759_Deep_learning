@@ -46,9 +46,14 @@ class CustomImageDataset(Dataset):
         return one_hot.float()
     def __getitem__(self, idx):
         img_path=self.files[idx]
-        patterns=img_path.split("/")[::-1]
+        if os.name=="nt" : #if on windows
+            patterns = img_path.split("\\")[::-1]
+            location=patterns[1].split("/")[2]
+        else :
+            patterns=img_path.split("/")[::-1]
+            location = patterns[1]
         #location=img_path[len(self.img_dir)+1:len(self.img_dir)+3]
-        location=patterns[1]
+
 
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
         annotations=json.load(open(self.annotation_files[location]))
