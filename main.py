@@ -15,7 +15,7 @@ from utils import set_parameter_requires_grad,Experiment,preprocess
 
 #-------data initialisation-------------------------------
 print("dd", os.getcwd())
-data_path=f"data/images"
+data_path=f"data/data/images"
 
 train_list=np.loadtxt(f"data/training.txt")[1::].astype(int)
 val_list=np.loadtxt(f"data/validation.txt")[1::].astype(int)

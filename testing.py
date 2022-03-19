@@ -12,21 +12,22 @@ import torchvision
 from training.training import training
 from training.dataloaders.cct_dataloader import CustomImageDataset
 from utils import set_parameter_requires_grad,Experiment,preprocess
-from main import metrics,criterion,vgg,alexnet
+from main import metrics,criterion,vgg,alexnet,device
 from training.training import validation_loop
 from tqdm import tqdm
 test_list=np.loadtxt(f"data/test.txt")[1::].astype(int)
-data_path=f"data/images"
+data_path=f"data/data/images"
 
 #vgg.load_state_dict(torch.load("models/models_weights/"))
 #alexnet.load_state_dict(torch.load("models/models_weights/"))
 models=[vgg,alexnet]
 
 for model in models :
+    m0del=model.to(device)
     for location in test_list :
         test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
         test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=50, shuffle=True, num_workers=0,  pin_memory=True)
-        val_loss, results=validation_loop(model,tqdm(test_loader),criterion,"cpu")
+        val_loss, results=validation_loop(model,tqdm(test_loader),criterion,device)
         metrics_results={}
         for key in metrics :
             metrics_results[key]=metrics[key](results[0].numpy(),results[1].numpy())

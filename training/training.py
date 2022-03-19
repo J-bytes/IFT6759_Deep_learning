@@ -23,7 +23,7 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
         # forward + backward + optimize
 
         outputs = model(inputs)
-        results[1] = torch.cat((results[1], outputs.detach().cpu()),dim=0)
+        results[1] = torch.cat((results[1], torch.functional.softmax(outputs).detach().cpu()),dim=0)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -53,7 +53,7 @@ def validation_loop(model,loader,criterion,device):
 
             # forward + backward + optimize
             outputs = model(inputs)
-            results[1] = torch.cat((results[1], outputs.detach().cpu()),dim=0)
+            results[1] = torch.cat((results[1], torch.functional.softmax(outputs).detach().cpu()),dim=0)
             loss = criterion(outputs, labels)
             running_loss+=loss.detach()
 
