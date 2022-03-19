@@ -78,22 +78,49 @@ print("The model has now been successfully loaded into memory")
 
 
 #------------defining metrics--------------------------------------------
+import sklearn
+from sklearn.metrics import top_k_accuracy_score
+
+def top1(true,pred) :
+    true = np.argmax(true, axis=1)
+    #labels=np.unique(true)
+    labels = np.arange(0, 22)
+    return top_k_accuracy_score(true,pred,k=1,labels=labels)
+def top5(true,pred) :
+    true = np.argmax(true, axis=1)
+    labels = np.arange(0,22)
+
+    return top_k_accuracy_score(true,pred,k=5,labels=labels)
+
+def f1(true,pred) :
+    true=np.argmax(true,axis=1)
+    pred=np.argmax(pred,axis=1)
+    return sklearn.metrics.f1_score(true,pred,average='weighted')
+
+def auc(true,pred) :
+    true = np.argmax(true, axis=1)
+    labels = np.arange(0, 22)
+    return sklearn.metrics.roc_auc_score(true,pred,multi_class="ovo",labels=labels)
+metrics={
+    "f1"    :    f1,
+    "top-1" :    top1,
+    "top-5" :    top5,
+    "auc"   :   auc
+}
+
+
+if __name__=="__main__" :
+    #------------training--------------------------------------------
+    print("Starting training now")
+    if True :   #input("do you want to clear old log files? (yes/no)").lower()=="yes" :
 
 
 
+        for model in [vgg,alexnet] :
+            model = model.to(device)
 
-
-#------------training--------------------------------------------
-print("Starting training now")
-if True :   #input("do you want to clear old log files? (yes/no)").lower()=="yes" :
-
-
-
-    for model in [vgg,alexnet] :
-        model = model.to(device)
-
-        experiment = Experiment(f"log/{model._get_name()}")
-        optimizer = torch.optim.AdamW(model.parameters())
-        training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=50,patience=5,experiment=experiment)
+            experiment = Experiment(f"log/{model._get_name()}")
+            optimizer = torch.optim.AdamW(model.parameters())
+            training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=50,patience=5,experiment=experiment,metrics=metrics)
 
 

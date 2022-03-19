@@ -20,6 +20,7 @@ class CustomImageDataset(Dataset):
         self.length=0
         self.files=[]
         self.annotation_files={}
+
         for location in locations :
             for root, dirs, files in os.walk(f"{self.img_dir}/{location}", topdown=False):
                 for name in files:
@@ -98,4 +99,4 @@ class CustomImageDataset(Dataset):
         label=self.label_transform(img_ann["category"])
         bbox=img_ann["bbox"]
 
-        return image.float(), label#,bbox
+        return image.float(), label

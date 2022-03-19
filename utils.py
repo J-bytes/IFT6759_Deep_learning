@@ -7,9 +7,9 @@ class Experiment() :
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        files = list(os.walk(directory))[0][2]
+        root,dir,files = list(os.walk(directory))[0]
         for f in files:
-            os.remove(f)
+            os.remove(root+"/"+f)
 
     def log_metric(self,metric_name,value,epoch):
 
