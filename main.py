@@ -13,23 +13,7 @@ from training.training import training
 from training.dataloaders.cct_dataloader import CustomImageDataset
 from utils import set_parameter_requires_grad,Experiment,preprocess
 
-#-------data initialisation-------------------------------
-print("dd", os.getcwd())
-data_path=f"data/images"
 
-train_list=np.loadtxt(f"data/training.txt")[1::].astype(int)
-val_list=np.loadtxt(f"data/validation.txt")[1::].astype(int)
-test_list=np.loadtxt(f"data/test.txt")[1::].astype(int)
-train_dataset=CustomImageDataset(data_path,locations=train_list,transform=preprocess)
-val_dataset=CustomImageDataset(data_path,locations=val_list,transform=preprocess)
-test_dataset=CustomImageDataset(data_path,locations=test_list,transform=preprocess)
-# val_dataset.method="val"
-# training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
-# validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
-#train_dataset=CustomImageDataset(data_path,locations=[11])
-training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=30, shuffle=True, num_workers=0,pin_memory=True)#num_worker>0 not working on windows
-validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=50, shuffle=True, num_workers=0,pin_memory=True)
-print("The data has now been loaded successfully into memory")
 #-----------model initialisation------------------------------
 if torch.cuda.is_available() :
     device="cuda"
@@ -110,6 +94,25 @@ metrics={
 
 
 if __name__=="__main__" :
+    # -------data initialisation-------------------------------
+    print("dd", os.getcwd())
+    data_path = f"data/data/images"
+
+    train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
+    val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
+    test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
+    train_dataset = CustomImageDataset(data_path, locations=train_list, transform=preprocess)
+    val_dataset = CustomImageDataset(data_path, locations=val_list, transform=preprocess)
+    test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
+    # val_dataset.method="val"
+    # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
+    # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
+    # train_dataset=CustomImageDataset(data_path,locations=[11])
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=30, shuffle=True, num_workers=0,
+                                                  pin_memory=True)  # num_worker>0 not working on windows
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=50, shuffle=True, num_workers=0,
+                                                    pin_memory=True)
+    print("The data has now been loaded successfully into memory")
     #------------training--------------------------------------------
     print("Starting training now")
     if True :   #input("do you want to clear old log files? (yes/no)").lower()=="yes" :

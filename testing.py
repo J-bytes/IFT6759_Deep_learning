@@ -21,7 +21,7 @@ data_path=f"data/data/images"
 #vgg.load_state_dict(torch.load("models/models_weights/"))
 #alexnet.load_state_dict(torch.load("models/models_weights/"))
 models=[vgg,alexnet]
-
+final_results={}
 for model in models :
     m0del=model.to(device)
     for location in test_list :
@@ -31,12 +31,12 @@ for model in models :
         metrics_results={}
         for key in metrics :
             metrics_results[key]=metrics[key](results[0].numpy(),results[1].numpy())
-        results[str(location)]=metrics_results
+        final_results[str(location)]=metrics_results
 
 import pandas as pd
 import matplotlib.pyplot as plt
-data=pd.DataFrame(results)
-
+data=pd.DataFrame(final_results)
+data.to_csv("test_results.csv")
 
 plt.rcParams["figure.figsize"] = (20, 12)
 plt.rcParams["figure.dpi"] = 400
