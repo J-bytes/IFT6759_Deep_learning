@@ -23,7 +23,12 @@ preprocess = transforms.Compose([
 class Experiment() :
     def __init__(self,directory):
         self.directory=directory
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
+        files = list(os.walk(directory))[0][2]
+        for f in files:
+            os.remove(f)
 
     def log_metric(self,metric_name,value,epoch):
 
@@ -44,11 +49,11 @@ def set_parameter_requires_grad(model, feature_extract):
 
 #-------data initialisation-------------------------------
 print("dd", os.getcwd())
-data_path=f"{os.getcwd()}/data/data/images"
+data_path=f"{os.getcwd()}/data/images"
 
-train_list=np.loadtxt("data/training.txt")[1::].astype(int)
-val_list=np.loadtxt("data/validation.txt")[1::].astype(int)
-test_list=np.loadtxt("data/test.txt")[1::].astype(int)
+train_list=np.loadtxt(f"data/training.txt")[1::].astype(int)
+val_list=np.loadtxt(f"data/validation.txt")[1::].astype(int)
+test_list=np.loadtxt(f"data/test.txt")[1::].astype(int)
 train_dataset=CustomImageDataset(data_path,locations=train_list,transform=preprocess)
 val_dataset=CustomImageDataset(data_path,locations=val_list,transform=preprocess)
 test_dataset=CustomImageDataset(data_path,locations=test_list,transform=preprocess)
@@ -56,8 +61,8 @@ test_dataset=CustomImageDataset(data_path,locations=test_list,transform=preproce
 # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
 # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
 #train_dataset=CustomImageDataset(data_path,locations=[11])
-training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=30, shuffle=True, num_workers=5,pin_memory=True)
-validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=50, shuffle=True, num_workers=5,pin_memory=True)
+training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=30, shuffle=True, num_workers=10,pin_memory=True)
+validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=50, shuffle=True, num_workers=10,pin_memory=True)
 print("The data has now been loaded successfully into memory")
 #-----------model initialisation------------------------------
 if torch.cuda.is_available() :
@@ -106,14 +111,12 @@ print("The model has now been successfully loaded into memory")
 #)
 print("Starting training now")
 if input("do you want to clear old log files? (yes/no)").lower()=="yes" :
-    import glob
+
 
 
     for model in [vgg,alexnet,frcnn] :
         model = model.to(device)
-        files = glob.glob(f"log/{model._get_name()}")
-        for f in files:
-            os.remove(f)
+
         experiment = Experiment(f"log/{model._get_name()}")
         optimizer = torch.optim.AdamW(model.parameters())
         training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=50,patience=5,experiment=experiment)
