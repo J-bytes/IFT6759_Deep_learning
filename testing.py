@@ -35,7 +35,7 @@ for model in models :
 
 import pandas as pd
 import matplotlib.pyplot as plt
-data=pd.DataFrame(final_results)
+data=pd.DataFrame(final_results).T
 data.to_csv("test_results.csv")
 
 plt.rcParams["figure.figsize"] = (20, 12)
@@ -47,5 +47,5 @@ plt.xticks(rotation=90)
 plt.xlabel("locations")
 plt.ylabel("metrics_results")
 plt.legend()
-plt.title("distribution of classes in the differents datasets")
-plt.savefig("histogram_distribution_datasets.png")
+plt.title("test set results per location")
+plt.savefig("test_set_results.png")
