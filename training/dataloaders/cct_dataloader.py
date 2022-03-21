@@ -8,6 +8,7 @@ from imageio import imread
 import json
 import numpy as np
 import cv2 as cv
+from PIL import Image
 import re
 class CustomImageDataset(Dataset):
     def __init__(self, img_dir, locations, transform=None):
@@ -19,6 +20,7 @@ class CustomImageDataset(Dataset):
         self.length=0
         self.files=[]
         self.annotation_files={}
+
         for location in locations :
             for root, dirs, files in os.walk(f"{self.img_dir}/{location}", topdown=False):
                 for name in files:
@@ -33,24 +35,30 @@ class CustomImageDataset(Dataset):
         self.categories={}
 
         data=json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
-        for ex,category in enumerate(data["categories"]) :
-            self.categories[category["name"]]=ex
+        i=0
+        for category in data["categories"] :
+            if category["name"]!="empty" :
+                self.categories[category["name"]]=i
+                i+=1
     def __len__(self):
         return self.length
 
     def label_transform(self,label): # encode one_hot
-
-        one_hot= torch.zeros((22))
+        if label=="empty" :
+            return torch.zeros((21))
+        one_hot= torch.zeros((21))
         one_hot[self.categories[label]]=1
         return one_hot.float()
-
     def __getitem__(self, idx):
         img_path=self.files[idx]
-        # print("PATH", img_path)
-        patterns=img_path.split("/")[::-1]
-        img_name = patterns[0]
+        if os.name=="nt" : #if on windows
+            patterns = img_path.split("\\")[::-1]
+            location=patterns[1].split("/")[2]
+        else :
+            patterns=img_path.split("/")[::-1]
+            location = patterns[1]
         #location=img_path[len(self.img_dir)+1:len(self.img_dir)+3]
-        location=patterns[1]
+        img_name = patterns[0]
 
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
         annotations=json.load(open(self.annotation_files[location]))
@@ -77,17 +85,26 @@ class CustomImageDataset(Dataset):
         to_save = str(path + img_name_wh_jpg + '.txt')
         # print("test", to_save)
 
-        f = open(to_save, "w+")
-        to_write = str(str(category_id) + ' ' + str(new_x) + ' ' + str(new_y) + ' ' + str(new_width) + ' ' + str(new_height))
-        f.write(to_write)
-        f.close()
+        # f = open(to_save, "w+")
+        # to_write = str(str(category_id) + ' ' + str(new_x) + ' ' + str(new_y) + ' ' + str(new_width) + ' ' + str(new_height))
+        # f.write(to_write)
+        # f.close()
+        new_width = (bbox_width0 * self.largeur)/width_pic
+        new_height = (bbox_height0 * self.hauteur) / height_pic
+        #f = open(img_path+".txt", "w+")
+        #f.write(category_id + "," + new_x + "," + new_y + "," + new_width + "," + new_height)
+        #f.close()
 
-        image=np.reshape(image,(3,self.largeur, self.hauteur))
+        #image=np.reshape(image,(3,self.largeur, self.hauteur))
+
+
 
         if self.transform:
+            image=Image.fromarray(np.uint8(image))
             image = self.transform(image)
 
-        image=torch.tensor(image).float()
+        #image=torch.tensor(image).float()
+
         try :
             img_ann = annotations[patterns[0]]
         except Exception as e:
@@ -98,4 +115,4 @@ class CustomImageDataset(Dataset):
         label=self.label_transform(img_ann["category"])
         bbox=img_ann["bbox"]
 
-        return image, label#,bbox
+        return image.float(), label
