@@ -35,14 +35,16 @@ class CustomImageDataset(Dataset):
         self.categories={}
 
         data=json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
+        data["categories"].pop("empty",None)
         for ex,category in enumerate(data["categories"]) :
             self.categories[category["name"]]=ex
     def __len__(self):
         return self.length
 
     def label_transform(self,label): # encode one_hot
-
-        one_hot= torch.zeros((22))
+        if label=="empty" :
+            return torch.zeros((21))
+        one_hot= torch.zeros((21))
         one_hot[self.categories[label]]=1
         return one_hot.float()
     def __getitem__(self, idx):
