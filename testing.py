@@ -11,7 +11,7 @@ import torchvision
 #-----local imports---------------------------------------
 from training.training import training
 from training.dataloaders.cct_dataloader import CustomImageDataset
-from utils import set_parameter_requires_grad,Experiment,preprocess
+from multi_utils import set_parameter_requires_grad,Experiment,preprocess
 from main import metrics,criterion,vgg,alexnet,device
 from training.training import validation_loop
 from tqdm import tqdm

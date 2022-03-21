@@ -10,8 +10,9 @@ import numpy as np
 import torchvision
 #-----local imports---------------------------------------
 from training.training import training
-from training.dataloaders.cct_dataloader import CustomImageDataset
-from utils import set_parameter_requires_grad,Experiment,preprocess
+#from training.dataloaders.cct_dataloader import CustomImageDataset
+from training.dataloaders.yolo_dataloader import CustomImageDataset
+from multi_utils import set_parameter_requires_grad,Experiment,preprocess,collate_fn
 
 
 #-----------model initialisation------------------------------
@@ -21,9 +22,12 @@ else :
     device="cpu"
     warnings.warn("No gpu is available for the computation")
 
+device="cpu"
+os.environ["CUDA_LAUNCH_BLOCKING"]="1"
 #image size input 600x480
 #model=Rcnn(features=[6300,2,22],channels=[3,64,32,1]).to(device)
-#model = torch.hub.load('ultralytics/yolov5', 'yolov5s', classes=22).to(device)
+#yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', classes=21,autoshape=False,pretrained=True).to(device)
+
 #---------------------------------------------------
 
 
@@ -36,17 +40,17 @@ alexnet = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=True)
 set_parameter_requires_grad(alexnet, feature_extract=True)
 alexnet.classifier[6] = torch.nn.Linear(alexnet.classifier[6].in_features, 21,bias=True)
 ##---------------------------------------------------
-# frcnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-# from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-#
-# # replace the classifier with a new one, that has
-# # num_classes which is user-defined
-# num_classes = 22  # 1 class (person) + background
-# # get number of input features for the classifier
-# in_features = frcnn.roi_heads.box_predictor.cls_score.in_features
-# # replace the pre-trained head with a new one
-# frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-#
+frcnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+
+# replace the classifier with a new one, that has
+# num_classes which is user-defined
+num_classes = 22  # 1 class (person) + background
+# get number of input features for the classifier
+in_features = frcnn.roi_heads.box_predictor.cls_score.in_features
+# replace the pre-trained head with a new one
+frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
 
 
 criterion=torch.nn.CrossEntropyLoss() # to replace..?
@@ -108,10 +112,10 @@ if __name__=="__main__" :
     # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # train_dataset=CustomImageDataset(data_path,locations=[11])
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=30, shuffle=True, num_workers=0,
-                                                  pin_memory=True)  # num_worker>0 not working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=50, shuffle=True, num_workers=0,
-                                                    pin_memory=True)
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=3, shuffle=True, num_workers=0,
+                                                  pin_memory=True,collate_fn=collate_fn)  # num_worker>0 not working on windows
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=5, shuffle=True, num_workers=0,
+                                                    pin_memory=True,collate_fn=collate_fn)
     print("The data has now been loaded successfully into memory")
     #------------training--------------------------------------------
     print("Starting training now")
@@ -119,7 +123,7 @@ if __name__=="__main__" :
 
 
 
-        for model in [alexnet] :
+        for model in [frcnn] :
             model = model.to(device)
 
             experiment = Experiment(f"log/{model._get_name()}")

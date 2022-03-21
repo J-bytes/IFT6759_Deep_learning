@@ -12,29 +12,32 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
     results=[torch.tensor([]),torch.tensor([])]
     model.train()
 
-    for inputs,labels in loader:
-        # get the inputs; data is a list of [inputs, labels]
-        results[0]=torch.cat((results[0],labels),dim=0)
-        inputs,labels=inputs.to(device),labels.to(device)
-
-        # zero the parameter gradients
+    for images,targets in loader:
         optimizer.zero_grad()
 
-        # forward + backward + optimize
+        x=torch.tensor([])
+        for image in images :
+            x=torch.cat((x,image.view(1,3,224,224)),dim=0)
 
-        outputs = model(inputs)
-        results[1] = torch.cat((results[1], torch.nn.functional.softmax(outputs,dim=1).detach().cpu()),dim=0)
-        loss = criterion(outputs, labels)
-        loss.backward()
+        images=x
+        images = images.to(device)
+
+        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        loss_dict = model(images,targets)
+        losses = sum(loss for loss in loss_dict.values())
+        loss_value = losses.item()
+
+
+        losses.backward()
         optimizer.step()
-        running_loss+=loss.detach()
+        running_loss+=losses.detach()
 
         if verbose and i % 20 == 0:
             print(f" epoch : {epoch} , iteration :{i} ,running_loss : {running_loss}")
 
 
         #ending loop
-        del inputs,labels,loss,outputs #garbage management sometimes fails with cuda
+        #del inputs,labels,loss,outputs #garbage management sometimes fails with cuda
         i+=1
     return running_loss,results
 

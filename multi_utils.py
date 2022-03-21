@@ -32,3 +32,10 @@ preprocess = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
+
+def collate_fn(batch):
+    """
+    To handle the data loading as different images may have different number
+    of objects and to handle varying size tensors as well.
+    """
+    return tuple(zip(*batch))
