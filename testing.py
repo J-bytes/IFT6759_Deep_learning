@@ -16,14 +16,14 @@ from main import metrics,criterion,vgg,alexnet,device
 from training.training import validation_loop
 from tqdm import tqdm
 test_list=np.loadtxt(f"data/test.txt")[1::].astype(int)
-data_path=f"data/data/images"
+data_path=f"data/images"
 
-#vgg.load_state_dict(torch.load("models/models_weights/"))
-#alexnet.load_state_dict(torch.load("models/models_weights/"))
+vgg.load_state_dict(torch.load("models/models_weights/VGG_3.pt"))
+alexnet.load_state_dict(torch.load("models/models_weights/AlexNet_1.pt"))
 models=[vgg,alexnet]
 final_results={}
 for model in models :
-    m0del=model.to(device)
+    model=model.to(device)
     for location in test_list :
         test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
         test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=50, shuffle=True, num_workers=0,  pin_memory=True)
