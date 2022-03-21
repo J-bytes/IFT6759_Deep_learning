@@ -115,7 +115,7 @@ if __name__=="__main__" :
     print("The data has now been loaded successfully into memory")
     #------------training--------------------------------------------
     print("Starting training now")
-    if True :   #input("do you want to clear old log files? (yes/no)").lower()=="yes" :
+    if input("do you want to clear old log files? (yes/no)").lower()=="yes" :
 
 
 

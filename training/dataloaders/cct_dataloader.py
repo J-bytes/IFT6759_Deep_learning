@@ -35,9 +35,11 @@ class CustomImageDataset(Dataset):
         self.categories={}
 
         data=json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
-        data["categories"].pop("empty",None)
-        for ex,category in enumerate(data["categories"]) :
-            self.categories[category["name"]]=ex
+        i=0
+        for category in data["categories"] :
+            if category["name"]!="empty" :
+                self.categories[category["name"]]=i
+                i+=1
     def __len__(self):
         return self.length
 

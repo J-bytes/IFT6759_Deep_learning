@@ -59,8 +59,8 @@ for location in locations :
 
 #step 2 : split n images
 n1=int(0.1*n)
-training=7*n1
-validation=2*n1
+training=int(5.1*n1)
+validation=int(3.9*n1)
 test=n1
 sizes=[]
 
