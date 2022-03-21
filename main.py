@@ -3,7 +3,7 @@ import warnings
 import torch
 import tqdm
 import copy
-from comet_ml import Experiment
+#from comet_ml import Experiment
 import os
 
 #-----local imports---------------------------------------
@@ -13,15 +13,31 @@ from models.Rcnn import Rcnn
 
 
 #-------data initialisation-------------------------------
-print("dd", os.getcwd())
-#data_path=f"{os.getcwd()}/data/data/images"
+data_path=f"{os.getcwd()}/data/images"
+print("DATAPATH", data_path)
 # train_dataset=CustomImageDataset(data_path,locations=list(range(65,70)))
 # val_dataset=CustomImageDataset(data_path,locations=list(range(0,5)))
 # val_dataset.method="val"
 # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
 # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
-train_dataset=CustomImageDataset(data_path,locations=11)
+# train_dataset=CustomImageDataset(data_path,locations=list(range(11,12)))
+# training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
+
+locations_train = list()
+locations_valid = list()
+locations_test = list()
+
+train_dataset=CustomImageDataset(data_path,locations=list(range(11,12)))
+val_dataset=CustomImageDataset(data_path,locations=list(range(11,12)))
+val_dataset.method="val"
 training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
+train_dataset.__getitem__(0)
+
+
+
+
+
+validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
 
 print("The data has now been loaded successfully into memory")
 #-----------model initialisation------------------------------

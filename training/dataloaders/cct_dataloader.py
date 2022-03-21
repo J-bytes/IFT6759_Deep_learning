@@ -10,7 +10,7 @@ import numpy as np
 import cv2 as cv
 import re
 class CustomImageDataset(Dataset):
-    def __init__(self, img_dir,locations, transform=None):
+    def __init__(self, img_dir, locations, transform=None):
         self.largeur = 600
         self.hauteur = 480
         self.locations=locations # feed only select locations
@@ -43,16 +43,19 @@ class CustomImageDataset(Dataset):
         one_hot= torch.zeros((22))
         one_hot[self.categories[label]]=1
         return one_hot.float()
+
     def __getitem__(self, idx):
         img_path=self.files[idx]
+        # print("PATH", img_path)
         patterns=img_path.split("/")[::-1]
+        img_name = patterns[0]
         #location=img_path[len(self.img_dir)+1:len(self.img_dir)+3]
         location=patterns[1]
 
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
         annotations=json.load(open(self.annotation_files[location]))
         image = cv.resize(cv.imread(img_path),(self.largeur, self.hauteur)) #TODO verify dimension
-        annotation = annotations[img_path]
+        annotation = annotations[img_name]
         bbox = annotation["bbox"]
         bbox_x0 = bbox[0]
         bbox_y0 = bbox[1]
@@ -63,13 +66,20 @@ class CustomImageDataset(Dataset):
         height_pic = annotation["height"]
         category_id = annotation["category_id"]
 
-        new_x = (bbox_x0 + bbox_width0 / 2) * self.largeur/width_pic
-        new_y = (bbox_y0 + bbox_height0 / 2) * self.hauteur / height_pic
+        new_x = (bbox_x0 + bbox_width0 / 2) / width_pic
+        new_y = (bbox_y0 + bbox_height0 / 2) / height_pic
 
-        new_width = (bbox_width0 * self.largeur)/width_pic
-        new_height = (bbox_height0 * self.hauteur) / height_pic
-        f = open(img_path+".txt", "w+")
-        f.write(category_id + "," + new_x + "," + new_y + "," + new_width + "," + new_height)
+        new_width = bbox_width0 / width_pic
+        new_height = bbox_height0 / height_pic
+
+        path = str(self.img_dir + '/labels/')
+        img_name_wh_jpg = img_name[:-4]
+        to_save = str(path + img_name_wh_jpg + '.txt')
+        # print("test", to_save)
+
+        f = open(to_save, "w+")
+        to_write = str(str(category_id) + ' ' + str(new_x) + ' ' + str(new_y) + ' ' + str(new_width) + ' ' + str(new_height))
+        f.write(to_write)
         f.close()
 
         image=np.reshape(image,(3,self.largeur, self.hauteur))
