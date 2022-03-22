@@ -22,8 +22,7 @@ else :
     device="cpu"
     warnings.warn("No gpu is available for the computation")
 
-device="cpu"
-os.environ["CUDA_LAUNCH_BLOCKING"]="1"
+num_classes = 21+1  # 1 class (person) + background
 #image size input 600x480
 #model=Rcnn(features=[6300,2,22],channels=[3,64,32,1]).to(device)
 #yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', classes=21,autoshape=False,pretrained=True).to(device)
@@ -45,10 +44,11 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 # replace the classifier with a new one, that has
 # num_classes which is user-defined
-num_classes = 22  # 1 class (person) + background
+
 # get number of input features for the classifier
 in_features = frcnn.roi_heads.box_predictor.cls_score.in_features
 # replace the pre-trained head with a new one
+set_parameter_requires_grad(frcnn, feature_extract=True)
 frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
 
@@ -72,11 +72,11 @@ from sklearn.metrics import top_k_accuracy_score
 def top1(true,pred) :
     true = np.argmax(true, axis=1)
     #labels=np.unique(true)
-    labels = np.arange(0, 21)
+    labels = np.arange(0, num_classes-1)
     return top_k_accuracy_score(true,pred,k=1,labels=labels)
 def top5(true,pred) :
     true = np.argmax(true, axis=1)
-    labels = np.arange(0,21)
+    labels = np.arange(0,num_classes-1)
 
     return top_k_accuracy_score(true,pred,k=5,labels=labels)
 
@@ -87,7 +87,7 @@ def f1(true,pred) :
 
 def auc(true,pred) :
     true = np.argmax(true, axis=1)
-    labels = np.arange(0, 21)
+    labels = np.arange(0, num_classes-1)
     return sklearn.metrics.roc_auc_score(true,pred,multi_class="ovo",labels=labels) #ovo???
 metrics={
     "f1"    :    f1,
@@ -128,6 +128,6 @@ if __name__=="__main__" :
 
             experiment = Experiment(f"log/{model._get_name()}")
             optimizer = torch.optim.AdamW(model.parameters())
-            training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=50,patience=5,experiment=experiment,metrics=metrics)
+            training(model,optimizer,training_loader,validation_loader,device,verbose=False,epoch_max=50,patience=5,experiment=experiment,metrics=metrics)
 
 

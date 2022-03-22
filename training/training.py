@@ -6,7 +6,7 @@ import numpy as np
 
 # training loop
 
-def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
+def training_loop(model,loader,optimizer,device,verbose,epoch) :
     running_loss=0
     i=0
     results=[torch.tensor([]),torch.tensor([])]
@@ -15,9 +15,10 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
     for images,targets in loader:
         optimizer.zero_grad()
 
-        x=torch.tensor([])
-        for image in images :
-            x=torch.cat((x,image.view(1,3,224,224)),dim=0)
+        image_H = images[0].shape[2]
+        x = torch.tensor([])
+        for image in images:
+            x = torch.cat((x, image.view(1, 3, image_H, image_H)), dim=0)
 
         images=x
         images = images.to(device)
@@ -25,7 +26,7 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         loss_dict = model(images,targets)
         losses = sum(loss for loss in loss_dict.values())
-        loss_value = losses.item()
+
 
 
         losses.backward()
@@ -43,22 +44,36 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
 
 
 
-def validation_loop(model,loader,criterion,device):
+def validation_loop(model,loader,device):
     running_loss=0
     i=0
     model.eval()
     results = [torch.tensor([]), torch.tensor([])]
     with torch.no_grad() :
-        for inputs,labels in loader:
+        for images,labels in loader:
             # get the inputs; data is a list of [inputs, labels]
-            results[0] = torch.cat((results[0], labels),dim=0)
-            inputs,labels=inputs.to(device),labels.to(device)
+
+            image_H=images.shape[2]
+            x = torch.tensor([])
+            for image in images:
+                x = torch.cat((x, image.view(1, 3, image_H, image_H)), dim=0)
+
+            images = x
+            images = images.to(device)
 
             # forward + backward + optimize
-            outputs = model(inputs)
-            results[1] = torch.cat((results[1], torch.nn.functional.softmax(outputs,dim=1).detach().cpu()),dim=0)
-            loss = criterion(outputs, labels)
-            running_loss+=loss.detach()
+            outputs = model(images)
+            outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
+            if len(outputs[0]['boxes']) != 0:
+                boxes = outputs[0]['boxes'].data.numpy()
+                scores = outputs[0]['scores'].data.numpy()
+                # filter out boxes according to `detection_threshold`
+                boxes = boxes[scores >= 0.5].astype(np.int32)
+                draw_boxes = boxes.copy()
+                # get all the predicited class names
+                pred_classes = [i for i in outputs[0]['labels'].cpu().numpy()]
+
+
 
 
             #
@@ -67,13 +82,13 @@ def validation_loop(model,loader,criterion,device):
             #         metrics_results[key] += metrics[key](labels.cpu().numpy(), torch.nn.functional.softmax(
             #             outputs).cpu().detach().numpy()) / len(inputs)
             #ending loop
-            del inputs,labels,outputs,loss #garbage management sometimes fails with cuda
+            #del inputs,labels,outputs,loss #garbage management sometimes fails with cuda
             i+=1
     return running_loss,results
 
 
 
-def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
+def training(model,optimizer,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
 
     epoch=0
 
@@ -85,15 +100,15 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
 
         if not verbose:
-            train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, criterion, device, verbose,
+            train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, device, verbose,
                                                         epoch)
-            val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), criterion, device
+            val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), device
                                                         )
 
         else :
-            train_loss,results = training_loop(model, training_loader, optimizer, criterion, device, verbose,
+            train_loss,results = training_loop(model, training_loader, optimizer, device, verbose,
                                                         epoch)
-            val_loss, results = validation_loop(model, validation_loader, criterion, device)
+            val_loss, results = validation_loop(model, validation_loader, device)
 
 
 

@@ -37,16 +37,12 @@ class CustomImageDataset(Dataset):
         data=json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
         i=0
         for category in data["categories"] :
-            if category["name"]!="empty" :
-                self.categories[category["name"]]=i
-                i+=1
+            self.categories[category["name"]]=i
+            i+=1
     def __len__(self):
         return self.length
 
     def label_transform(self,label): # encode one_hot
-        if label=="empty" :
-            return 22
-        else :
             return self.categories[label]
     def __getitem__(self, idx):
         img_path=self.files[idx]
