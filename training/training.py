@@ -69,11 +69,13 @@ def validation_loop(model,loader,device):
                 boxes = outputs[0]['boxes'].data.numpy()
                 scores = outputs[0]['scores'].data.numpy()
                 # filter out boxes according to `detection_threshold`
-                boxes = boxes[scores >= 0.5].astype(np.int32)
-                draw_boxes = boxes.copy()
+                arg=np.argmax(scores)
+                if scores[arg]>0.5 : #define some other threshold?
+                box = boxes[arg].copy()
+
                 # get all the predicited class names
                 pred_classes = [i for i in outputs[0]['labels'].cpu().numpy()]
-                stop=1
+
 
 
 
@@ -102,8 +104,8 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
 
         if not verbose:
-            #train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, device, verbose,
-            #                                            epoch)
+            train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, device, verbose,
+                                                        epoch)
             val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), device
                                                         )
 
