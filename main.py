@@ -29,12 +29,12 @@ else :
 
 vgg= torchvision.models.vgg19(pretrained=True)
 set_parameter_requires_grad(vgg, feature_extract=True)
-vgg.classifier[6] = torch.nn.Linear(vgg.classifier[6].in_features, 21,bias=True)
+vgg.classifier[6] = torch.nn.Linear(vgg.classifier[6].in_features, 16,bias=True)
 #---------------------------------------------------
 #alexnet
 alexnet = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=True)
 set_parameter_requires_grad(alexnet, feature_extract=True)
-alexnet.classifier[6] = torch.nn.Linear(alexnet.classifier[6].in_features, 21,bias=True)
+alexnet.classifier[6] = torch.nn.Linear(alexnet.classifier[6].in_features, 16,bias=True)
 ##---------------------------------------------------
 # frcnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
 # from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -68,23 +68,25 @@ from sklearn.metrics import top_k_accuracy_score
 def top1(true,pred) :
     true = np.argmax(true, axis=1)
     #labels=np.unique(true)
-    labels = np.arange(0, 21)
+    labels = np.arange(0, 16)
     return top_k_accuracy_score(true,pred,k=1,labels=labels)
 def top5(true,pred) :
     true = np.argmax(true, axis=1)
-    labels = np.arange(0,21)
+    labels = np.arange(0,16)
 
     return top_k_accuracy_score(true,pred,k=5,labels=labels)
 
 def f1(true,pred) :
     true=np.argmax(true,axis=1)
     pred=np.argmax(pred,axis=1)
-    return sklearn.metrics.f1_score(true,pred,average='weighted') #weighted??
+    return sklearn.metrics.f1_score(true,pred,average='macro') #weighted??
 
 def auc(true,pred) :
     true = np.argmax(true, axis=1)
-    labels = np.arange(0, 21)
+    labels = np.arange(0, 16)
     return sklearn.metrics.roc_auc_score(true,pred,multi_class="ovo",labels=labels) #ovo???
+
+
 metrics={
     "f1"    :    f1,
     "top-1" :    top1,
