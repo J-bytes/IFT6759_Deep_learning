@@ -25,6 +25,7 @@ def training_loop(model,loader,optimizer,device,verbose,epoch) :
 
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         loss_dict = model(images,targets)
+
         losses = sum(loss for loss in loss_dict.values())
 
 
@@ -53,7 +54,7 @@ def validation_loop(model,loader,device):
         for images,labels in loader:
             # get the inputs; data is a list of [inputs, labels]
 
-            image_H=images.shape[2]
+            image_H=images[0].shape[2]
             x = torch.tensor([])
             for image in images:
                 x = torch.cat((x, image.view(1, 3, image_H, image_H)), dim=0)
@@ -72,6 +73,7 @@ def validation_loop(model,loader,device):
                 draw_boxes = boxes.copy()
                 # get all the predicited class names
                 pred_classes = [i for i in outputs[0]['labels'].cpu().numpy()]
+                stop=1
 
 
 
@@ -100,8 +102,8 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
 
         if not verbose:
-            train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, device, verbose,
-                                                        epoch)
+            #train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, device, verbose,
+            #                                            epoch)
             val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), device
                                                         )
 

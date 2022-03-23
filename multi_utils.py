@@ -39,3 +39,4 @@ def collate_fn(batch):
     of objects and to handle varying size tensors as well.
     """
     return tuple(zip(*batch))
+
