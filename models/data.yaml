@@ -1,8 +1,0 @@
-train: yolo/train/images  # train images (relative to 'path') 128 images
-val: yolo/valid/images  # val images (relative to 'path') 128 images
-test:  yolo/test/images # test images (optional)
-
-nc: 17
-names: ["bobcat","opossum","car","coyote","raccoon","bird","dog","cat","squirrel","rabbit","skunk",
-        "fox","rodent","pig","deer","cow","empty"]
-
