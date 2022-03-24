@@ -1,0 +1,8 @@
+train: yolov5/data/images/train/images  # train images (relative to 'path') 128 images
+val: yolov5/data/valid/images  # val images (relative to 'path') 128 images
+test:  yolov5/data/test/images # test images (optional)
+
+nc: 17
+names: ["bobcat","opossum","car","coyote","raccoon","bird","dog","cat","squirrel","rabbit","skunk",
+        "fox","rodent","pig","deer","cow","empty"]
+
