@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # pip install -r requirements.txt
 
 # Base ----------------------------------------
@@ -35,3 +36,6 @@ seaborn>=0.11.0
 # pycocotools>=2.0  # COCO mAP
 # roboflow
 thop  # FLOPs computation
+=======
+tensorboard
+>>>>>>> 74a53b5678b96c828d47400e2b440b5d96447524
