@@ -40,7 +40,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 # get number of input features for the classifier
 in_features = frcnn.roi_heads.box_predictor.cls_score.in_features
 # replace the pre-trained head with a new one
-set_parameter_requires_grad(frcnn, feature_extract=True)
+#set_parameter_requires_grad(frcnn, feature_extract=True)
 frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
 print("The model has now been successfully loaded into memory")
@@ -101,9 +101,9 @@ if __name__=="__main__" :
     # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # train_dataset=CustomImageDataset(data_path,locations=[11])
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=3, shuffle=True, num_workers=0,
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=5, shuffle=True, num_workers=0,
                                                   pin_memory=True,collate_fn=collate_fn)  # num_worker>0 not working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=5, shuffle=True, num_workers=0,
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=10, shuffle=True, num_workers=0,
                                                     pin_memory=True,collate_fn=collate_fn)
     print("The data has now been loaded successfully into memory")
     #------------training--------------------------------------------

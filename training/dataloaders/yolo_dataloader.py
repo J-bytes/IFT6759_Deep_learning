@@ -10,10 +10,16 @@ import numpy as np
 import cv2 as cv
 from PIL import Image
 import re
+
+
+
+id2number={6:0,1:1,33:2,9:3,3:4,11:5,8:6,16:7,5:8,10:9,7:10,51:11,99:12,39:13,34:14,37:15,  30:16,14:17,21:18,40:19,66:20,97:21}
+
+
 class CustomImageDataset(Dataset):
     def __init__(self, img_dir,locations, transform=None):
-        # self.largeur = 600
-        # self.hauteur = 480
+        self.largeur = 600
+        self.hauteur = 600
         self.locations = locations  # feed only select locations
         self.img_dir = img_dir
         self.transform = transform
@@ -58,26 +64,11 @@ class CustomImageDataset(Dataset):
         annotations=json.load(open(self.annotation_files[location]))
         image = cv.imread(img_path) #TODO verify dimension
         annotation = annotations[patterns[0]]
-        bbox = annotation["bbox"]
-        bbox_x0 = bbox[0]
-        bbox_y0 = bbox[1]
-        bbox_width0 = bbox[2]
-        bbox_height0 = bbox[3]
+
+
 
         width_pic = annotation["width"]
         height_pic = annotation["height"]
-        category_id = annotation["category_id"]
-
-        new_x = (bbox_x0 + bbox_width0 / 2) * self.largeur/width_pic
-        new_y = (bbox_y0 + bbox_height0 / 2) * self.hauteur / height_pic
-
-        new_width = (bbox_width0 * self.largeur)/width_pic
-        new_height = (bbox_height0 * self.hauteur) / height_pic
-        #f = open(img_path+".txt", "w+")
-        #f.write(category_id + "," + new_x + "," + new_y + "," + new_width + "," + new_height)
-        #f.close()
-
-        #image=np.reshape(image,(3,self.largeur, self.hauteur))
 
 
 
