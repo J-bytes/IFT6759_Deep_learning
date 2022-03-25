@@ -24,12 +24,9 @@ def training_loop(model,loader,optimizer,device,verbose,epoch) :
         images = images.to(device)
 
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+
         loss_dict = model(images,targets)
-
         losses = sum(loss for loss in loss_dict.values())
-
-
-
         losses.backward()
         optimizer.step()
         running_loss+=losses.detach()
@@ -45,10 +42,10 @@ def training_loop(model,loader,optimizer,device,verbose,epoch) :
 
 
 @torch.no_grad()
-def validation_loop(model,loader,device):
+def validation_loop(model,loader,device,verbose, epoch):
     running_loss=0
     i=0
-    model.train()
+    model.eval()
     results = [torch.tensor([]), torch.tensor([])]
 
     for images, targets in loader:
@@ -58,13 +55,32 @@ def validation_loop(model,loader,device):
             x = torch.cat((x, image.view(1, 3, image_H, image_H)), dim=0)
 
         images = x.to(device)
+        #loss_dict = model(images, targets)
 
+        #losses = sum(loss for loss in loss_dict.values())
 
-        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        loss_dict = model(images, targets)
+        #running_loss += losses.detach()
+        results[1].cat(int(targets[0]['labels'][0]))
+        pred_labels = model(images)[0]
+        outputs = model(images)
+        outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
+        if len(outputs[0]['boxes']) != 0:
+            boxes = outputs[0]['boxes'].data.numpy()
+            scores = outputs[0]['scores'].data.numpy()
 
-        losses = sum(loss for loss in loss_dict.values())
-        running_loss += losses.detach()
+            # filter out boxes according to `detection_threshold`
+            arg = np.argmax(scores)
+
+            if scores[arg] > 0.05:  # define some other threshold?
+                box = boxes[arg].copy()
+                pred = outputs[0]['labels'][arg]
+                print('pred',int(pred), scores[arg])
+                results[0].cat(results[0],pred)
+            else :
+                results[0].cat(results[0],0)
+            # get all the predicited class names
+            pred_classes = [i for i in outputs[0]['labels'].cpu().numpy()]
+
 
         if verbose and i % 20 == 0:
             print(f" epoch : {epoch} , iteration :{i} ,running_loss : {running_loss}")
@@ -135,13 +151,13 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
         if not verbose:
             train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, device, verbose,
                                                         epoch)
-            val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), device
+            val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), device, verbose, epoch
                                                         )
 
         else :
             train_loss,results = training_loop(model, training_loader, optimizer, device, verbose,
                                                         epoch)
-            val_loss, results = validation_loop(model, validation_loader, device)
+            val_loss, results = validation_loop(model, validation_loader, device, verbose, epoch)
 
 
 
@@ -150,9 +166,11 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
         val_loss_list.append(val_loss)
         if experiment :
             experiment.log_metric("training_loss",train_loss.tolist(),epoch=epoch)
-            experiment.log_metric("validation_loss", val_loss.tolist(),epoch=epoch)
-            for key in metrics :
-                experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
+            #experiment.log_metric("validation_loss", val_loss.tolist(),epoch=epoch)
+            if metrics is not None:
+                for key in metrics :
+                    #print('key',key,'result[1]',results[1].numpy(),'result[0]',results[0].numpy(),'metric',metrics[key])
+                    experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
 
 
 
@@ -165,4 +183,4 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
             print("patience has been reduced by 1")
         #Finishing the loop
         epoch+=1
-    print('Finished Training')
+    print('Finished Training', best_loss)
