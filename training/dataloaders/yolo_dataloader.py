@@ -41,14 +41,17 @@ class CustomImageDataset(Dataset):
         data = json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
         i = 0
         for category in data["categories"]:
-            if category["name"] not in ["empty", "bat", "insect", "mountain_lion", "lizard", "badger"]:
+            if category["name"] not in [ "bat", "insect", "mountain_lion", "lizard", "badger"]:
                 self.categories[category["name"]] = id2number[int(category["id"])]
                 i += 1
+
+
     def __len__(self):
         return self.length
 
-    def label_transform(self,label): # encode one_hot
-            return self.categories[label]
+
+    def label_transform(self, label):  # encode one_hot
+        return self.categories[label]
     def __getitem__(self, idx):
         img_path=self.files[idx]
         if os.name=="nt" : #if on windows
