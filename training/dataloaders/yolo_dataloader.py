@@ -12,33 +12,32 @@ from PIL import Image
 import re
 class CustomImageDataset(Dataset):
     def __init__(self, img_dir,locations, transform=None):
-        self.largeur = 600
-        self.hauteur = 480
-        self.locations=locations # feed only select locations
+        # self.largeur = 600
+        # self.hauteur = 480
+        self.locations = locations  # feed only select locations
         self.img_dir = img_dir
         self.transform = transform
-        self.length=0
-        self.files=[]
-        self.annotation_files={}
+        self.length = 0
+        self.files = []
+        self.annotation_files = {}
 
-        for location in locations :
-            for root, dirs, files in os.walk(f"{self.img_dir}/{location}", topdown=False):
-                for name in files:
-                    location_file=os.path.join(root, name)
-                    if location_file[::-1][0:4]!="json"[::-1] :
-                        self.files.append(location_file)
-                        self.length+=1
-                    else :
-                        self.annotation_files[str(location)]=location_file
-                break;
+        for location in locations:
+            annotation = json.load(open(f"{self.img_dir}/{str(location)}/annotation.json"))
+            self.annotation_files[str(location)] = f"{self.img_dir}/{str(location)}/annotation.json"
+            for file in annotation:
 
-        self.categories={}
+                if annotation[file]["category"] not in ["bat", "insect", "mountain_lion", "lizard", "badger"]:
+                    self.files.append(f"{self.img_dir}/{str(location)}/{file}")
+                    self.length += 1
 
-        data=json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
-        i=0
-        for category in data["categories"] :
-            self.categories[category["name"]]=i
-            i+=1
+        self.categories = {}
+
+        data = json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
+        i = 0
+        for category in data["categories"]:
+            if category["name"] not in ["empty", "bat", "insect", "mountain_lion", "lizard", "badger"]:
+                self.categories[category["name"]] = id2number[int(category["id"])]
+                i += 1
     def __len__(self):
         return self.length
 

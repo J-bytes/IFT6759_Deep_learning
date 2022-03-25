@@ -44,8 +44,39 @@ def training_loop(model,loader,optimizer,device,verbose,epoch) :
     return running_loss,results
 
 
-
+@torch.no_grad()
 def validation_loop(model,loader,device):
+    running_loss=0
+    i=0
+    model.train()
+    results = [torch.tensor([]), torch.tensor([])]
+
+    for images, targets in loader:
+        image_H = images[0].shape[2]
+        x = torch.tensor([])
+        for image in images:
+            x = torch.cat((x, image.view(1, 3, image_H, image_H)), dim=0)
+
+        images = x.to(device)
+
+
+        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        loss_dict = model(images, targets)
+
+        losses = sum(loss for loss in loss_dict.values())
+        running_loss += losses.detach()
+
+        if verbose and i % 20 == 0:
+            print(f" epoch : {epoch} , iteration :{i} ,running_loss : {running_loss}")
+
+        # ending loop
+        # del inputs,labels,loss,outputs #garbage management sometimes fails with cuda
+        i += 1
+    return running_loss,results
+
+
+@torch.no_grad()
+def test_loop(model,loader,device):
     running_loss=0
     i=0
     model.eval()
@@ -71,7 +102,7 @@ def validation_loop(model,loader,device):
                 # filter out boxes according to `detection_threshold`
                 arg=np.argmax(scores)
                 if scores[arg]>0.5 : #define some other threshold?
-                box = boxes[arg].copy()
+                    box = boxes[arg].copy()
 
                 # get all the predicited class names
                 pred_classes = [i for i in outputs[0]['labels'].cpu().numpy()]
@@ -89,8 +120,6 @@ def validation_loop(model,loader,device):
             #del inputs,labels,outputs,loss #garbage management sometimes fails with cuda
             i+=1
     return running_loss,results
-
-
 
 def training(model,optimizer,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
 

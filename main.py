@@ -22,7 +22,7 @@ else :
     device="cpu"
     warnings.warn("No gpu is available for the computation")
 
-num_classes = 21+1  # 1 class (person) + background
+num_classes = 16+1  # 1 class (person) + background
 #image size input 600x480
 #model=Rcnn(features=[6300,2,22],channels=[3,64,32,1]).to(device)
 #yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', classes=21,autoshape=False,pretrained=True).to(device)
@@ -30,14 +30,6 @@ num_classes = 21+1  # 1 class (person) + background
 #---------------------------------------------------
 
 
-vgg= torchvision.models.vgg19(pretrained=True)
-set_parameter_requires_grad(vgg, feature_extract=True)
-vgg.classifier[6] = torch.nn.Linear(vgg.classifier[6].in_features, 21,bias=True)
-#---------------------------------------------------
-#alexnet
-alexnet = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=True)
-set_parameter_requires_grad(alexnet, feature_extract=True)
-alexnet.classifier[6] = torch.nn.Linear(alexnet.classifier[6].in_features, 21,bias=True)
 ##---------------------------------------------------
 frcnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -51,9 +43,6 @@ in_features = frcnn.roi_heads.box_predictor.cls_score.in_features
 set_parameter_requires_grad(frcnn, feature_extract=True)
 frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
-
-
-criterion=torch.nn.CrossEntropyLoss() # to replace..?
 print("The model has now been successfully loaded into memory")
 
 #---comet logger initialisation
