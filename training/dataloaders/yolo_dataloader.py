@@ -28,6 +28,7 @@ class CustomImageDataset(Dataset):
         self.annotation_files = {}
 
         for location in locations:
+            #print(self.img_dir)
             annotation = json.load(open(f"{self.img_dir}/{str(location)}/annotation.json"))
             self.annotation_files[str(location)] = f"{self.img_dir}/{str(location)}/annotation.json"
             for file in annotation:
@@ -56,17 +57,21 @@ class CustomImageDataset(Dataset):
         img_path=self.files[idx]
         if os.name=="nt" : #if on windows
             patterns = img_path.split("\\")[::-1]
-            location=patterns[1].split("/")[2]
+            #print(patterns)
+            location=patterns[0].split("/")[2]
         else :
             patterns=img_path.split("/")[::-1]
             location = patterns[1]
         #location=img_path[len(self.img_dir)+1:len(self.img_dir)+3]
 
-
+        #print("loc",location)
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
         annotations=json.load(open(self.annotation_files[location]))
         image = cv.imread(img_path) #TODO verify dimension
-        annotation = annotations[patterns[0]]
+        keyname = patterns[0].split("/")[3]
+
+        annotation = annotations[patterns[0].split("/")[3]]
+
 
 
 
@@ -82,10 +87,12 @@ class CustomImageDataset(Dataset):
         #image=torch.tensor(image).float()
 
         try :
-            img_ann = annotations[patterns[0]]
+
+            img_ann = annotations[keyname]
+
         except Exception as e:
             print(e,"\n")
-            print(location)
+            print('loc',location)
             sys.exit()
 
         label=self.label_transform(img_ann["category"])

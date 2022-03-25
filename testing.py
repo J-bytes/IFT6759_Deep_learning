@@ -15,6 +15,12 @@ from multi_utils import set_parameter_requires_grad,Experiment,preprocess
 from main import metrics,criterion,vgg,alexnet,device
 from training.training import validation_loop
 from tqdm import tqdm
+
+#TODO :
+# implementer F1 score et mAP
+# fix dataloader dans la branche du faster rcnn (classes retirées)
+
+
 test_list=np.loadtxt(f"data/test.txt")[1::].astype(int)
 data_path=f"data/images"
 
