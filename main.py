@@ -66,24 +66,32 @@ def top1(true,pred) :
 def top5(true,pred) :
     true = np.argmax(true, axis=1)
     labels = np.arange(0,num_classes-1)
-
     return top_k_accuracy_score(true,pred,k=5,labels=labels)
 
-def f1(true,pred) :
-    print(true, pred)
-    true=np.argmax(true,axis=1)
-    pred=np.argmax(pred,axis=1)
+def f1(true, pred) :
+    print("f1 true and pred", true, pred)
+    # true=np.argmax(true,axis=1)
+    # pred=np.argmax(pred,axis=1)
     return sklearn.metrics.f1_score(true,pred,average='weighted') #weighted??
 
+def macro(true, pred) :
+    print("macro true and pred", true, pred)
+    # true=np.argmax(true,axis=1)
+    # pred=np.argmax(pred,axis=1)
+    return sklearn.metrics.f1_score(true,pred,average='macro') #weighted??
+
 def auc(true,pred) :
-    true = np.argmax(true, axis=1)
+    # true = np.argmax(true, axis=1)
     labels = np.arange(0, num_classes-1)
     return sklearn.metrics.roc_auc_score(true,pred,multi_class="ovo",labels=labels) #ovo???
+
 metrics={
     "f1"    :    f1,
-    "top-1" :    top1,
-    "top-5" :    top5,
-    "auc"   :   auc
+    "macro":    macro,
+    # "top-1" :    top1,
+    # "top-5" :    top5,
+    # "auc"   :   auc,
+
 }
 
 
@@ -113,8 +121,6 @@ if __name__=="__main__" :
     print("Starting training now")
     #if input("do you want to clear old log files? (yes/no)").lower()=="yes" :
     if (1 == 1):
-
-
         for model in [frcnn] :
             model = model.to(device)
 

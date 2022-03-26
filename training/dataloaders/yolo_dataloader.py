@@ -59,26 +59,22 @@ class CustomImageDataset(Dataset):
             patterns = img_path.split("\\")[::-1]
             #print(patterns)
             location=patterns[0].split("/")[2]
+            keyname = patterns[0].split("/")[3]
         else :
             patterns=img_path.split("/")[::-1]
             location = patterns[1]
+            keyname = patterns[0]
         #location=img_path[len(self.img_dir)+1:len(self.img_dir)+3]
 
         #print("loc",location)
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
         annotations=json.load(open(self.annotation_files[location]))
         image = cv.imread(img_path) #TODO verify dimension
-        keyname = patterns[0].split("/")[3]
 
-        annotation = annotations[patterns[0].split("/")[3]]
-
-
-
+        annotation = annotations[keyname]
 
         width_pic = annotation["width"]
         height_pic = annotation["height"]
-
-
 
         if self.transform:
             image=Image.fromarray(np.uint8(image))

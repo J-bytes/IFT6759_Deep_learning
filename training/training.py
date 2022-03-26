@@ -46,7 +46,9 @@ def validation_loop(model,loader,device,verbose, epoch):
     running_loss=0
     i=0
     model.eval()
-    results = [torch.tensor([]), torch.tensor([])]
+    # results = [torch.tensor([]), torch.tensor([])]
+    pred_label_list = []
+    true_label_list = []
 
     for images, targets in loader:
         image_H = images[0].shape[2]
@@ -60,27 +62,29 @@ def validation_loop(model,loader,device,verbose, epoch):
         #losses = sum(loss for loss in loss_dict.values())
 
         #running_loss += losses.detach()
-        results[1].cat(int(targets[0]['labels'][0]))
-        pred_labels = model(images)[0]
+        true_label = int(targets[0]['labels'][0])
+        true_label_list.append(true_label)
+        # results[1] = torch.cat((results[1], true_label))
         outputs = model(images)
         outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
         if len(outputs[0]['boxes']) != 0:
             boxes = outputs[0]['boxes'].data.numpy()
             scores = outputs[0]['scores'].data.numpy()
-
             # filter out boxes according to `detection_threshold`
             arg = np.argmax(scores)
-
+            print('scores', scores)
             if scores[arg] > 0.05:  # define some other threshold?
                 box = boxes[arg].copy()
                 pred = outputs[0]['labels'][arg]
-                print('pred',int(pred), scores[arg])
-                results[0].cat(results[0],pred)
-            else :
-                results[0].cat(results[0],0)
+                print('pred', int(pred), scores[arg])
+                # results[0] = torch.cat((results[0], pred))
+                pred_label_list.append(int(pred))
+        else:
+            # results[0].cat(results[0],0)
+            pred_label_list.append(0)
+
             # get all the predicited class names
             pred_classes = [i for i in outputs[0]['labels'].cpu().numpy()]
-
 
         if verbose and i % 20 == 0:
             print(f" epoch : {epoch} , iteration :{i} ,running_loss : {running_loss}")
@@ -88,6 +92,7 @@ def validation_loop(model,loader,device,verbose, epoch):
         # ending loop
         # del inputs,labels,loss,outputs #garbage management sometimes fails with cuda
         i += 1
+    results=[torch.tensor(pred_label_list), torch.tensor(true_label_list)]
     return running_loss,results
 
 
@@ -141,14 +146,13 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
 
     epoch=0
 
-
-
     train_loss_list=[]
     val_loss_list=[]
     best_loss=np.inf
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
 
         if not verbose:
+
             train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, device, verbose,
                                                         epoch)
             val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), device, verbose, epoch
