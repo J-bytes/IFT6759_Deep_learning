@@ -13,7 +13,10 @@ from training.training import training
 from training.dataloaders.cct_dataloader import CustomImageDataset
 from utils import set_parameter_requires_grad,Experiment,preprocess
 
-
+torch.autograd.set_detect_anomaly(False)
+torch.autograd.profiler.profile(False)
+torch.autograd.profiler.emit_nvtx(False)
+torch.backends.cudnn.benchmark = True
 #-----------model initialisation------------------------------
 if torch.cuda.is_available() :
     device="cuda"

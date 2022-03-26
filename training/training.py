@@ -18,7 +18,8 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
         inputs,labels=inputs.to(device),labels.to(device)
 
         # zero the parameter gradients
-        optimizer.zero_grad()
+        for param in model.parameters():
+            param.grad = None
 
         # forward + backward + optimize
 
