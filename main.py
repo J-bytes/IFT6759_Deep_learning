@@ -28,12 +28,12 @@ else :
 
 
 vgg= torchvision.models.vgg19(pretrained=True)
-set_parameter_requires_grad(vgg, feature_extract=True)
+#set_parameter_requires_grad(vgg, feature_extract=True)
 vgg.classifier[6] = torch.nn.Linear(vgg.classifier[6].in_features, 16,bias=True)
 #---------------------------------------------------
 #alexnet
 alexnet = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=True)
-set_parameter_requires_grad(alexnet, feature_extract=True)
+#set_parameter_requires_grad(alexnet, feature_extract=True)
 alexnet.classifier[6] = torch.nn.Linear(alexnet.classifier[6].in_features, 16,bias=True)
 ##---------------------------------------------------
 # frcnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
@@ -81,7 +81,8 @@ def f1(true,pred) :
     pred=np.argmax(pred,axis=1)
     return sklearn.metrics.f1_score(true,pred,average='macro') #weighted??
 
-def auc(true,pred) :
+def auc(true,pred):
+    print('auc true pred', true, pred)
     true = np.argmax(true, axis=1)
     labels = np.arange(0, 16)
     return sklearn.metrics.roc_auc_score(true,pred,multi_class="ovo",labels=labels) #ovo???
@@ -100,9 +101,9 @@ if __name__=="__main__" :
     print("dd", os.getcwd())
     data_path = f"data/data/images"
 
-    train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
-    val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
-    test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
+    train_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
+    val_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
+    test_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
     train_dataset = CustomImageDataset(data_path, locations=train_list, transform=preprocess)
     val_dataset = CustomImageDataset(data_path, locations=val_list, transform=preprocess)
     test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
@@ -110,22 +111,22 @@ if __name__=="__main__" :
     # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # train_dataset=CustomImageDataset(data_path,locations=[11])
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=30, shuffle=True, num_workers=0,
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=0,
                                                   pin_memory=True)  # num_worker>0 not working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=50, shuffle=True, num_workers=0,
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=64, shuffle=True, num_workers=0,
                                                     pin_memory=True)
     print("The data has now been loaded successfully into memory")
     #------------training--------------------------------------------
     print("Starting training now")
-    if input("do you want to clear old log files? (yes/no)").lower()=="yes" :
+   # if input("do you want to clear old log files? (yes/no)").lower()=="yes" :
 
+    if 1==1 :
 
-
-        for model in [alexnet] :
+        for model in [vgg] :
             model = model.to(device)
 
             experiment = Experiment(f"log/{model._get_name()}")
             optimizer = torch.optim.AdamW(model.parameters())
-            training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=50,patience=5,experiment=experiment,metrics=metrics)
+            training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=2,patience=5,experiment=experiment,metrics=metrics)
 
 

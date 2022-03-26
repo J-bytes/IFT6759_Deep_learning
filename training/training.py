@@ -71,11 +71,7 @@ def validation_loop(model,loader,criterion,device):
 
 
 def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
-
     epoch=0
-
-
-
     train_loss_list=[]
     val_loss_list=[]
     best_loss=np.inf
@@ -92,8 +88,6 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
                                                         epoch)
             val_loss, results = validation_loop(model, validation_loader, criterion, device)
 
-
-
         #LOGGING DATA
         train_loss_list.append(train_loss)
         val_loss_list.append(val_loss)
@@ -102,8 +96,6 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
             experiment.log_metric("validation_loss", val_loss.tolist(),epoch=epoch)
             for key in metrics :
                 experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
-
-
 
         if val_loss<best_loss :
             best_loss=val_loss

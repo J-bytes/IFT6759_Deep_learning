@@ -16,8 +16,8 @@ id2number={6:0,1:1,33:2,9:3,3:4,11:5,8:6,16:7,5:8,10:9,7:10,51:11,99:12,39:13,34
 
 class CustomImageDataset(Dataset):
     def __init__(self, img_dir, locations, transform=None):
-        #self.largeur = 600
-        #self.hauteur = 480
+        self.largeur = 320
+        self.hauteur = 320
         self.locations=locations # feed only select locations
         self.img_dir = img_dir
         self.transform = transform
@@ -52,24 +52,31 @@ class CustomImageDataset(Dataset):
         one_hot= torch.zeros((16))
         one_hot[self.categories[label]]=1
         return one_hot.float()
+
     def __getitem__(self, idx):
         img_path=self.files[idx]
         if os.name=="nt" : #if on windows
             patterns = img_path.split("\\")[::-1]
-            location=patterns[1].split("/")[2]
+            #print('patterns', patterns)
+            location=patterns[0].split("/")[3]
+            #print('location', location)
+            keyname = patterns[0].split("/")[4]
         else :
             patterns=img_path.split("/")[::-1]
             location = patterns[1]
+            keyname = patterns[0]
         #location=img_path[len(self.img_dir)+1:len(self.img_dir)+3]
-        img_name = patterns[0]
 
+        #print("loc",location)
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
         annotations=json.load(open(self.annotation_files[location]))
         image = cv.imread(img_path) #TODO verify dimension
-        annotation = annotations[img_name]
+        image = cv.resize(image, (self.hauteur, self.largeur))
+        
+        annotation = annotations[keyname]
 
-
-
+        width_pic = annotation["width"]
+        height_pic = annotation["height"]
 
         if self.transform:
             image=Image.fromarray(np.uint8(image))
@@ -78,7 +85,7 @@ class CustomImageDataset(Dataset):
         #image=torch.tensor(image).float()
 
         try :
-            img_ann = annotations[patterns[0]]
+            img_ann = annotations[keyname]
         except Exception as e:
             print(e,"\n")
             print(location)
