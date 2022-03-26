@@ -10,7 +10,7 @@ import numpy as np
 import torchvision
 #-----local imports---------------------------------------
 from training.training import training, training_pytorch
-#from training.dataloaders.cct_dataloader import CustomImageDataset
+# from training.dataloaders.cct_dataloader import CustomImageDataset
 from training.dataloaders.yolo_dataloader import CustomImageDataset
 from multi_utils import set_parameter_requires_grad,Experiment,preprocess,collate_fn
 
@@ -25,12 +25,8 @@ else :
 num_classes = 16+1  # 1 class (person) + background
 #image size input 600x480
 #model=Rcnn(features=[6300,2,22],channels=[3,64,32,1]).to(device)
-#yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', classes=21,autoshape=False,pretrained=True).to(device)
-
 #---------------------------------------------------
 
-
-##---------------------------------------------------
 frcnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
@@ -48,7 +44,7 @@ print("The model has now been successfully loaded into memory")
 #---comet logger initialisation
 # Create an experiment with your api key
 #experiment = Experiment(
-#    api_key="",
+#    api_key="kBRAlsKBa9qYcqfZ3kXA197dW",
 #    project_name="ift6759",
 #    workspace="bariljeanfrancois",
 #)
@@ -69,13 +65,13 @@ def top5(true,pred) :
     return top_k_accuracy_score(true,pred,k=5,labels=labels)
 
 def f1(true, pred) :
-    print("f1 true and pred", true, pred)
+    #print("f1 true and pred", true, pred)
     # true=np.argmax(true,axis=1)
     # pred=np.argmax(pred,axis=1)
     return sklearn.metrics.f1_score(true,pred,average='weighted') #weighted??
 
 def macro(true, pred) :
-    print("macro true and pred", true, pred)
+    #print("macro true and pred", true, pred)
     # true=np.argmax(true,axis=1)
     # pred=np.argmax(pred,axis=1)
     return sklearn.metrics.f1_score(true,pred,average='macro') #weighted??
@@ -102,9 +98,9 @@ if __name__=="__main__" :
 
     #train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
     #val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
-    train_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
-    val_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
-    test_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
+    train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
+    val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
+    test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
     train_dataset = CustomImageDataset(data_path, locations=train_list, transform=preprocess)
     val_dataset = CustomImageDataset(data_path, locations=val_list, transform=preprocess)
     test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
@@ -112,11 +108,11 @@ if __name__=="__main__" :
     # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # train_dataset=CustomImageDataset(data_path,locations=[11])
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=0,
-                                                  pin_memory=True,collate_fn=collate_fn)  # num_worker>0 not working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=True, num_workers=0,
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=0,
+                                                  pin_memory=True,collate_fn=collate_fn)  # num_worker>0 n0t working on windows
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=16, shuffle=True, num_workers=0,
                                                     pin_memory=True,collate_fn=collate_fn)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=True, num_workers=0,
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=True, num_workers=0,
                                                     pin_memory=True,collate_fn=collate_fn)
     print("The data has now been loaded successfully into memory")
     #------------training--------------------------------------------
@@ -128,7 +124,7 @@ if __name__=="__main__" :
 
             experiment = Experiment(f"log/{model._get_name()}")
             optimizer = torch.optim.AdamW(model.parameters())
-            # training(model,optimizer,training_loader,validation_loader,device,verbose=False,epoch_max=1,patience=5,experiment=experiment,metrics=metrics)
-            training_pytorch(model, optimizer, training_loader, validation_loader, test_loader, device, verbose=False, epoch_max=2,
-                             patience=5, experiment=experiment, metrics=metrics)
+            training(model,optimizer,training_loader,validation_loader,device,verbose=False,epoch_max=1,patience=5,experiment=experiment,metrics=metrics)
+            # training_pytorch(model, optimizer, training_loader, validation_loader, test_loader, device, verbose=False, epoch_max=5,
+            #                  patience=5, experiment=experiment, metrics=metrics)
 

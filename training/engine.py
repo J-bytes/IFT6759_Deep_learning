@@ -5,12 +5,12 @@ import time
 import torch
 import torchvision.models.detection.mask_rcnn
 import training.utils as utils
-from training.coco_utils import get_coco_api_from_dataset
-from training.coco_eval import CocoEvaluator
+from .coco_utils import get_coco_api_from_dataset
+from .coco_eval import CocoEvaluator
 
 from training.utils import MetricLogger
-# from coco_eval import CocoEvaluator
-# from coco_utils import get_coco_api_from_dataset
+from .coco_eval import CocoEvaluator
+from .coco_utils import get_coco_api_from_dataset
 
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq, scaler=None):

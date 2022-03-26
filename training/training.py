@@ -8,7 +8,7 @@ import wandb
 # training loop
 from torch.optim.lr_scheduler import StepLR
 from training.engine import train_one_epoch, evaluate
-import utils
+import training.utils as utils
 
 
 def training_loop(model,loader,optimizer,device,verbose,epoch) :
