@@ -2,9 +2,14 @@
 import torch
 import tqdm
 import numpy as np
+import wandb
 
 
 # training loop
+from torch.optim.lr_scheduler import StepLR
+from training.engine import train_one_epoch, evaluate
+import utils
+
 
 def training_loop(model,loader,optimizer,device,verbose,epoch) :
     running_loss=0
@@ -128,10 +133,6 @@ def test_loop(model,loader,device):
                 # get all the predicited class names
                 pred_classes = [i for i in outputs[0]['labels'].cpu().numpy()]
 
-
-
-
-
             #
             # if metrics :
             #     for key in metrics:
@@ -143,29 +144,32 @@ def test_loop(model,loader,device):
     return running_loss,results
 
 def training(model,optimizer,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
+    wandb.init(project="animal_classification", entity="selimgilon")
+    wandb.config = {
+        "epochs": epoch_max,
+        "batch_size": 128,
+        "model": model,
+        "metrics": metrics,
+        "optimizer": optimizer,
+        "patience": patience
+    }
 
     epoch=0
 
     train_loss_list=[]
     val_loss_list=[]
     best_loss=np.inf
+
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
-
         if not verbose:
-
-            train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, device, verbose,
-                                                        epoch)
-            val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), device, verbose, epoch
-                                                        )
-
+            train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, device, verbose, epoch)
+            val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), device, verbose, epoch)
         else :
-            train_loss,results = training_loop(model, training_loader, optimizer, device, verbose,
-                                                        epoch)
+            train_loss,results = training_loop(model, training_loader, optimizer, device, verbose, epoch)
             val_loss, results = validation_loop(model, validation_loader, device, verbose, epoch)
 
 
-
-        #LOGGING DATA
+        #LOGGING DATA _ COMET
         train_loss_list.append(train_loss)
         val_loss_list.append(val_loss)
         if experiment :
@@ -177,14 +181,77 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
                     experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
 
 
+        # Optional
+        wandb.watch(model)
 
         if val_loss<best_loss :
             best_loss=val_loss
             #save the model after XX iterations : TODO : adjust when to save weights
-            torch.save(model.state_dict(), f"models/models_weights/{model._get_name()}_{epoch}.pt")
+            torch.save(model.state_dict(), f"models/models_weights/best_{model._get_name()}_{epoch}.pt")
+            print('Saved Weights coz best loss found so far')
         else :
             patience-=1
             print("patience has been reduced by 1")
         #Finishing the loop
         epoch+=1
+
+    # LOGGING DATA _ WANDB
+    print('train_loss_list', train_loss_list)
+    print('val_loss_list', val_loss_list)
+    wandb.run.summary["best_loss"] = best_loss
+    wandb.log({"train_loss_list": train_loss_list})
+    wandb.log({"val_loss_list": val_loss_list})
     print('Finished Training', best_loss)
+    torch.save(model.state_dict(), f"models/models_weights/last_{model._get_name()}_{epoch}.pt")
+    print('Final model saved')
+
+
+
+def training_pytorch(model,optimizer,training_loader,validation_loader,test_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=5):
+    wandb.init(project="animal_classification", entity="selimgilon")
+    wandb.config = {
+        "epochs": epoch_max,
+        "batch_size": 128,
+        "model": model,
+        "optimizer": optimizer,
+        "patience": patience
+    }
+    wandb.watch(model)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
+                                                   step_size=3,
+                                                   gamma=0.1)
+    all_train_logs = []
+    all_trans_valid_logs = []
+    all_cis_valid_logs = []
+    epoch = 0
+    while patience>0 and epoch<epoch_max:
+        # train for one epoch, printing every 10 iterations
+        train_logs = train_one_epoch(model, optimizer, training_loader, device, epoch, print_freq=100)
+        all_train_logs.append(train_logs)
+        # update the learning rate
+        lr_scheduler.step()
+        # evaluate on the test dataset
+        evaluate(model, validation_loader, device=device)
+
+        # for images, targets in validation_loader:
+        #     images = [image.to(device) for image in images]
+        #     targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        #
+        #     with torch.no_grad():
+        #         trans_loss_dict = model(images, targets)
+        #         trans_loss_dict = [{k: loss.to('cpu')} for k, loss in trans_loss_dict.items()]
+        #         all_trans_valid_logs.append(trans_loss_dict)
+        #
+        # for images, targets in validation_loader:  # can do batch of 10 prob.
+        #     images = [image.to(device) for image in images]
+        #     targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        #
+        #     with torch.no_grad():
+        #         cis_loss_dict = model(images, targets)
+        #         cis_loss_dict = [{k: loss.to('cpu')} for k, loss in cis_loss_dict.items()]
+        #         all_cis_valid_logs.append(cis_loss_dict)
+        epoch += 1
+    print("---- EVALUATION ON TEST SET: ----")
+
+    torch.save(model.state_dict(), f"models/models_weights/pytorch_training/last_{model._get_name()}_{epoch}.pt")
+    evaluate(model, test_loader, device=device)

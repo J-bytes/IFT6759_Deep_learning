@@ -9,7 +9,7 @@ import os
 import numpy as np
 import torchvision
 #-----local imports---------------------------------------
-from training.training import training
+from training.training import training, training_pytorch
 #from training.dataloaders.cct_dataloader import CustomImageDataset
 from training.dataloaders.yolo_dataloader import CustomImageDataset
 from multi_utils import set_parameter_requires_grad,Experiment,preprocess,collate_fn
@@ -116,6 +116,8 @@ if __name__=="__main__" :
                                                   pin_memory=True,collate_fn=collate_fn)  # num_worker>0 not working on windows
     validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=True, num_workers=0,
                                                     pin_memory=True,collate_fn=collate_fn)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=True, num_workers=0,
+                                                    pin_memory=True,collate_fn=collate_fn)
     print("The data has now been loaded successfully into memory")
     #------------training--------------------------------------------
     print("Starting training now")
@@ -126,6 +128,7 @@ if __name__=="__main__" :
 
             experiment = Experiment(f"log/{model._get_name()}")
             optimizer = torch.optim.AdamW(model.parameters())
-            training(model,optimizer,training_loader,validation_loader,device,verbose=False,epoch_max=1,patience=5,experiment=experiment,metrics=metrics)
-
+            # training(model,optimizer,training_loader,validation_loader,device,verbose=False,epoch_max=1,patience=5,experiment=experiment,metrics=metrics)
+            training_pytorch(model, optimizer, training_loader, validation_loader, test_loader, device, verbose=False, epoch_max=2,
+                             patience=5, experiment=experiment, metrics=metrics)
 
