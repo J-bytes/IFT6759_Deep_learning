@@ -69,7 +69,7 @@ def validation_loop(model,loader,criterion,device):
     return running_loss,results
 
 import wandb
-wandb.init()
+wandb.init("mila-prof-master-gang")
 
 def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
     epoch=0
