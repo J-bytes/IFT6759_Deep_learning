@@ -127,7 +127,7 @@ if __name__=="__main__" :
 
             experiment = Experiment(f"log/{model._get_name()}")
             optimizer = torch.optim.AdamW(model.parameters())
-            training(model,optimizer,training_loader,validation_loader,device,verbose=False,epoch_max=1,patience=5,experiment=experiment,metrics=metrics)
-            # training_pytorch(model, optimizer, training_loader, validation_loader, test_loader, device, verbose=False, epoch_max=5,
-            #                  patience=5, experiment=experiment, metrics=metrics)
+            #training(model,optimizer,training_loader,validation_loader,device,verbose=False,epoch_max=1,patience=5,experiment=experiment,metrics=metrics)
+            training_pytorch(model, optimizer, training_loader, validation_loader, test_loader, device, verbose=False, epoch_max=50,
+                              patience=5, experiment=experiment, metrics=metrics)
 
