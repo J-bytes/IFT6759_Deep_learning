@@ -154,7 +154,7 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
         "optimizer": optimizer,
         "patience": patience
     }
-    wandb.watch(model, log_freq=batch_size) 
+    wandb.watch(model, log_freq=batch_size)
 
     epoch=0
 
@@ -207,7 +207,7 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
 
 
 
-def training_pytorch(model,optimizer,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50, batch_size=1) :
+def training_pytorch(model,optimizer,training_loader,validation_loader,test_loader, device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50, batch_size=1) :
     wandb.init(project='mila-prof-master-gang', tags=[model._get_name()])
     wandb.config = {
         "epochs": epoch_max,
@@ -217,14 +217,13 @@ def training_pytorch(model,optimizer,training_loader,validation_loader,device="c
         "optimizer": optimizer,
         "patience": patience
     }
-    wandb.watch(model, log_freq=batch_size) 
-    
+    wandb.watch(model, log_freq=batch_size)
+
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=3,
                                                    gamma=0.1)
     all_train_logs = []
-    all_trans_valid_logs = []
-    all_cis_valid_logs = []
+    all_valid_logs = []
     epoch = 0
     while patience>0 and epoch<epoch_max:
         # train for one epoch, printing every 10 iterations
@@ -235,15 +234,16 @@ def training_pytorch(model,optimizer,training_loader,validation_loader,device="c
         # evaluate on the test dataset
         evaluate(model, validation_loader, device=device)
 
+
         for images, targets in validation_loader:
             images = [image.to(device) for image in images]
             targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        
-        #     with torch.no_grad():
-        #         trans_loss_dict = model(images, targets)
-        #         trans_loss_dict = [{k: loss.to('cpu')} for k, loss in trans_loss_dict.items()]
-        #         all_trans_valid_logs.append(trans_loss_dict)
-        #
+
+            with torch.no_grad():
+                trans_loss_dict = model(images, targets)
+                trans_loss_dict = [{k: loss.to('cpu')} for k, loss in trans_loss_dict.items()]
+                all_valid_logs.append(trans_loss_dict)
+
         # for images, targets in validation_loader:  # can do batch of 10 prob.
         #     images = [image.to(device) for image in images]
         #     targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
@@ -254,14 +254,14 @@ def training_pytorch(model,optimizer,training_loader,validation_loader,device="c
         #         all_cis_valid_logs.append(cis_loss_dict)
                 #LOGGING DATA _ COMET
 
-        if experiment :
-            experiment.log_metric("training_loss",train_loss.tolist(),epoch=epoch)
-            wandb.log({"train_loss": train_loss,
-                       "val_loss": val_loss})
-
-            for key in metrics :
-                experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
-                wandb.log({key : metrics[key](results[1].numpy(),results[0].numpy())})
+        # if experiment :
+        #     experiment.log_metric("training_loss",train_loss.tolist(),epoch=epoch)
+        #     wandb.log({"train_loss": train_loss,
+        #                "val_loss": val_loss})
+        #
+        #     for key in metrics :
+        #         experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
+        #         wandb.log({key : metrics[key](results[1].numpy(),results[0].numpy())})
 
         epoch += 1
     print("---- EVALUATION ON TEST SET: ----")
