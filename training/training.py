@@ -144,16 +144,17 @@ def test_loop(model,loader,device):
             i+=1
     return running_loss,results
 
-def training(model,optimizer,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
-    wandb.init(project="animal_classification", entity="selimgilon")
+def training(model,optimizer,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50, batch_size=1) :
+    wandb.init(project='mila-prof-master-gang', tags=[model._get_name()])
     wandb.config = {
         "epochs": epoch_max,
-        "batch_size": 128,
+        "batch_size": batch_size,
         "model": model,
         "metrics": metrics,
         "optimizer": optimizer,
         "patience": patience
     }
+    wandb.watch(model, log_freq=batch_size) 
 
     epoch=0
 
@@ -175,15 +176,13 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
         val_loss_list.append(val_loss)
         if experiment :
             experiment.log_metric("training_loss",train_loss.tolist(),epoch=epoch)
-            #experiment.log_metric("validation_loss", val_loss.tolist(),epoch=epoch)
-            if metrics is not None:
-                for key in metrics :
-                    #print('key',key,'result[1]',results[1].numpy(),'result[0]',results[0].numpy(),'metric',metrics[key])
-                    experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
+            wandb.log({"train_loss": train_loss,
+                       "val_loss": val_loss})
 
+            for key in metrics :
+                experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
+                wandb.log({key : metrics[key](results[1].numpy(),results[0].numpy())})
 
-        # Optional
-        wandb.watch(model)
 
         if val_loss<best_loss :
             best_loss=val_loss
@@ -208,16 +207,18 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
 
 
 
-def training_pytorch(model,optimizer,training_loader,validation_loader,test_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=5):
-    wandb.init(project="animal_classification", entity="selimgilon")
+def training_pytorch(model,optimizer,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50, batch_size=1) :
+    wandb.init(project='mila-prof-master-gang', tags=[model._get_name()])
     wandb.config = {
         "epochs": epoch_max,
-        "batch_size": 128,
+        "batch_size": batch_size,
         "model": model,
+        "metrics": metrics,
         "optimizer": optimizer,
         "patience": patience
     }
-    wandb.watch(model)
+    wandb.watch(model, log_freq=batch_size) 
+    
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=3,
                                                    gamma=0.1)
@@ -234,10 +235,10 @@ def training_pytorch(model,optimizer,training_loader,validation_loader,test_load
         # evaluate on the test dataset
         evaluate(model, validation_loader, device=device)
 
-        # for images, targets in validation_loader:
-        #     images = [image.to(device) for image in images]
-        #     targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        #
+        for images, targets in validation_loader:
+            images = [image.to(device) for image in images]
+            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        
         #     with torch.no_grad():
         #         trans_loss_dict = model(images, targets)
         #         trans_loss_dict = [{k: loss.to('cpu')} for k, loss in trans_loss_dict.items()]
@@ -251,6 +252,17 @@ def training_pytorch(model,optimizer,training_loader,validation_loader,test_load
         #         cis_loss_dict = model(images, targets)
         #         cis_loss_dict = [{k: loss.to('cpu')} for k, loss in cis_loss_dict.items()]
         #         all_cis_valid_logs.append(cis_loss_dict)
+                #LOGGING DATA _ COMET
+
+        if experiment :
+            experiment.log_metric("training_loss",train_loss.tolist(),epoch=epoch)
+            wandb.log({"train_loss": train_loss,
+                       "val_loss": val_loss})
+
+            for key in metrics :
+                experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
+                wandb.log({key : metrics[key](results[1].numpy(),results[0].numpy())})
+
         epoch += 1
     print("---- EVALUATION ON TEST SET: ----")
 
