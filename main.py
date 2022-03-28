@@ -92,6 +92,7 @@ metrics = {
 
 if __name__ == "__main__":
     # -------data initialisation-------------------------------
+    batch_size = 64
     print("dd", os.getcwd())
     data_path = f"data/images"
 
@@ -108,9 +109,9 @@ if __name__ == "__main__":
     # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # train_dataset=CustomImageDataset(data_path,locations=[11])
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=True, num_workers=8,
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8,
                                                   pin_memory=True)  # num_worker>0 not working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=64, shuffle=True, num_workers=8,
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=8,
                                                     pin_memory=True)
     print("The data has now been loaded successfully into memory")
     # ------------training--------------------------------------------
@@ -124,4 +125,4 @@ if __name__ == "__main__":
 
             experiment = Experiment(f"log/{model._get_name()}")
             optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
-            training(model, optimizer, criterion, training_loader, validation_loader, device, verbose=False, epoch_max=50, patience=5, experiment=experiment, metrics=metrics)
+            training(model, optimizer, criterion, training_loader, validation_loader, device, verbose=False, epoch_max=50, patience=5, experiment=experiment, metrics=metrics, batch_size=batch_size)

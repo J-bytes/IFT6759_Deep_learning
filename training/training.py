@@ -69,13 +69,13 @@ def validation_loop(model,loader,criterion,device):
             i+=1
     return running_loss,results
 
-def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
+def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50, batch_size=1) :
     wandb.init(project='mila-prof-master-gang', tags=[model._get_name()])
     epoch=0
     train_loss_list=[]
     val_loss_list=[]
     best_loss=np.inf
-    wandb.watch(model, log_freq=1) #, log_freq=50)
+    wandb.watch(model, log_freq=batch_size)
 
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
 
