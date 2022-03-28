@@ -14,7 +14,10 @@ from training.training import training, training_pytorch
 from training.dataloaders.yolo_dataloader import CustomImageDataset
 from multi_utils import set_parameter_requires_grad,Experiment,preprocess,collate_fn
 
-
+torch.autograd.set_detect_anomaly(False)
+torch.autograd.profiler.profile(False)
+torch.autograd.profiler.emit_nvtx(False)
+torch.backends.cudnn.benchmark=True
 #-----------model initialisation------------------------------
 if torch.cuda.is_available() :
     device="cuda"
@@ -94,7 +97,7 @@ metrics={
 if __name__=="__main__" :
     # -------data initialisation-------------------------------
     print("dd", os.getcwd())
-    data_path = f"data/images"
+    data_path = f"data/data/images"
 
     #train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
     #val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
@@ -108,9 +111,9 @@ if __name__=="__main__" :
     # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # train_dataset=CustomImageDataset(data_path,locations=[11])
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=0,
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=4,
                                                   pin_memory=True,collate_fn=collate_fn)  # num_worker>0 n0t working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=16, shuffle=True, num_workers=0,
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=10, shuffle=True, num_workers=4,
                                                     pin_memory=True,collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=True, num_workers=0,
                                                     pin_memory=True,collate_fn=collate_fn)

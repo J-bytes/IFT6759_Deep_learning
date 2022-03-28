@@ -18,7 +18,8 @@ def training_loop(model,loader,optimizer,device,verbose,epoch) :
     model.train()
 
     for images,targets in loader:
-        optimizer.zero_grad()
+        for param in model.parameters() :
+            param.grad=None
 
         image_H = images[0].shape[2]
         x = torch.tensor([])
