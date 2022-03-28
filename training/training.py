@@ -68,13 +68,16 @@ def validation_loop(model,loader,criterion,device):
             i+=1
     return running_loss,results
 
-
+import wandb
+wandb.init()
 
 def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
     epoch=0
     train_loss_list=[]
     val_loss_list=[]
     best_loss=np.inf
+    wandb.watch(model)#, log_freq=50)
+
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
 
         if not verbose:
@@ -87,16 +90,18 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
             train_loss,results = training_loop(model, training_loader, optimizer, criterion, device, verbose,
                                                         epoch)
             val_loss, results = validation_loop(model, validation_loader, criterion, device)
-
         #LOGGING DATA
         train_loss_list.append(train_loss)
         val_loss_list.append(val_loss)
         if experiment :
             experiment.log_metric("training_loss",train_loss.tolist(),epoch=epoch)
             experiment.log_metric("validation_loss", val_loss.tolist(),epoch=epoch)
+            wandb.log({"train_loss": train_loss,
+                       "val_loss": val_loss})
+
             for key in metrics :
                 experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
-
+                wandb.log({key : metrics[key](results[1].numpy(),results[0].numpy())})
         if val_loss<best_loss :
             best_loss=val_loss
             #save the model after XX iterations : TODO : adjust when to save weights
