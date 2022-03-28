@@ -55,15 +55,6 @@ alexnet.classifier[6] = torch.nn.Linear(alexnet.classifier[6].in_features, 16,bi
 criterion=torch.nn.CrossEntropyLoss() # to replace..?
 print("The model has now been successfully loaded into memory")
 
-#---comet logger initialisation
-# Create an experiment with your api key
-#experiment = Experiment(
-#    api_key="",
-#    project_name="ift6759",
-#    workspace="bariljeanfrancois",
-#)
-
-
 #------------defining metrics--------------------------------------------
 import sklearn
 from sklearn.metrics import top_k_accuracy_score
@@ -93,9 +84,9 @@ def auc(true,pred):
 
 metrics={
     "f1"    :    f1,
-    "top-1" :    top1,
-    "top-5" :    top5,
-    "auc"   :   auc
+    # "top-1" :    top1,
+    # "top-5" :    top5,
+    # "auc"   :   auc
 }
 
 
@@ -104,9 +95,9 @@ if __name__=="__main__" :
     print("dd", os.getcwd())
     data_path = f"data/data/images"
 
-    train_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
-    val_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
-    test_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
+    train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
+    val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
+    test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
     train_dataset = CustomImageDataset(data_path, locations=train_list, transform=preprocess)
     val_dataset = CustomImageDataset(data_path, locations=val_list, transform=preprocess)
     test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
@@ -114,9 +105,9 @@ if __name__=="__main__" :
     # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # train_dataset=CustomImageDataset(data_path,locations=[11])
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=0,
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=0,
                                                   pin_memory=True)  # num_worker>0 not working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=64, shuffle=True, num_workers=0,
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=True, num_workers=0,
                                                     pin_memory=True)
     print("The data has now been loaded successfully into memory")
     #------------training--------------------------------------------
@@ -124,8 +115,7 @@ if __name__=="__main__" :
    # if input("do you want to clear old log files? (yes/no)").lower()=="yes" :
 
     if 1==1 :
-
-        for model in [vgg] :
+        for model in [alexnet] :
             model = model.to(device)
 
             experiment = Experiment(f"log/{model._get_name()}")
