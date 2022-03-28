@@ -75,7 +75,7 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
     train_loss_list=[]
     val_loss_list=[]
     best_loss=np.inf
-    wandb.watch(model)#, log_freq=50)
+    wandb.watch(model, log_freq=1) #, log_freq=50)
 
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
 

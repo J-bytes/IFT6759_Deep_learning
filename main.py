@@ -92,9 +92,12 @@ if __name__=="__main__" :
     print("dd", os.getcwd())
     data_path = f"data/data/images"
 
-    train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
-    val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
-    test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
+    # train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
+    # val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
+    # test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
+    train_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
+    val_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
+    test_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
     train_dataset = CustomImageDataset(data_path, locations=train_list, transform=preprocess)
     val_dataset = CustomImageDataset(data_path, locations=val_list, transform=preprocess)
     test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
@@ -117,6 +120,6 @@ if __name__=="__main__" :
 
             experiment = Experiment(f"log/{model._get_name()}")
             optimizer = torch.optim.AdamW(model.parameters())
-            training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=2,patience=5,experiment=experiment,metrics=metrics)
+            training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=5,patience=5,experiment=experiment,metrics=metrics)
 
 
