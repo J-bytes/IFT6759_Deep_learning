@@ -1,17 +1,17 @@
-# ------python import------------------------------------
+#------python import------------------------------------
 import warnings
 import torch
 import tqdm
 import copy
-# from comet_ml import Experiment
+#from comet_ml import Experiment
 
 import os
 import numpy as np
 import torchvision
-# -----local imports---------------------------------------
+#-----local imports---------------------------------------
 from training.training import training
 from training.dataloaders.cct_dataloader import CustomImageDataset
-from utils import set_parameter_requires_grad, Experiment, preprocess
+from utils import set_parameter_requires_grad,Experiment,preprocess
 
 # -----------model initialisation------------------------------
 if torch.cuda.is_available():
@@ -51,16 +51,7 @@ alexnet.classifier[6] = torch.nn.Linear(alexnet.classifier[6].in_features, 16, b
 criterion = torch.nn.CrossEntropyLoss()  # to replace..?
 print("The model has now been successfully loaded into memory")
 
-# ---comet logger initialisation
-# Create an experiment with your api key
-# experiment = Experiment(
-#    api_key="",
-#    project_name="ift6759",
-#    workspace="bariljeanfrancois",
-# )
-
-
-# ------------defining metrics--------------------------------------------
+#------------defining metrics--------------------------------------------
 import sklearn
 from sklearn.metrics import top_k_accuracy_score
 

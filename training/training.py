@@ -2,6 +2,7 @@
 import torch
 import tqdm
 import numpy as np
+import wandb
 
 
 # training loop
@@ -68,10 +69,8 @@ def validation_loop(model,loader,criterion,device):
             i+=1
     return running_loss,results
 
-import wandb
-wandb.init("mila-prof-master-gang")
-
 def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,verbose=False,experiment=None,patience=5,epoch_max=50) :
+    wandb.init(project='mila-prof-master-gang', tags=[model._get_name()])
     epoch=0
     train_loss_list=[]
     val_loss_list=[]
