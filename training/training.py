@@ -128,7 +128,7 @@ def test_loop(model,loader,device):
                 scores = outputs[0]['scores'].data.numpy()
                 # filter out boxes according to `detection_threshold`
                 arg=np.argmax(scores)
-                if scores[arg]>0.5 : #define some other threshold?
+                if scores[arg]>0.05 : #define some other threshold?
                     box = boxes[arg].copy()
 
                 # get all the predicited class names
@@ -196,11 +196,7 @@ def training(model,optimizer,training_loader,validation_loader,device="cpu",metr
         epoch+=1
 
     # LOGGING DATA _ WANDB
-    print('train_loss_list', train_loss_list)
-    print('val_loss_list', val_loss_list)
     wandb.run.summary["best_loss"] = best_loss
-    wandb.log({"train_loss_list": train_loss_list})
-    wandb.log({"val_loss_list": val_loss_list})
     print('Finished Training', best_loss)
     torch.save(model.state_dict(), f"models/models_weights/last_{model._get_name()}_{epoch}.pt")
     print('Final model saved')
@@ -240,9 +236,9 @@ def training_pytorch(model,optimizer,training_loader,validation_loader,test_load
             targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
             with torch.no_grad():
-                trans_loss_dict = model(images, targets)
-                trans_loss_dict = [{k: loss.to('cpu')} for k, loss in trans_loss_dict.items()]
-                all_valid_logs.append(trans_loss_dict)
+                loss_dict = model(images, targets)
+                loss_dict = [{k: loss.to('cpu')} for k, loss in loss_dict.items()]
+                all_valid_logs.append(loss_dict)
 
         # for images, targets in validation_loader:  # can do batch of 10 prob.
         #     images = [image.to(device) for image in images]
