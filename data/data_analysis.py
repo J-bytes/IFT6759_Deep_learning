@@ -50,7 +50,7 @@ def plot(data,title=None) :
     plt.title("Distribution of image categories by location")
     plt.legend(bbox_to_anchor=(1.11,1.),loc="upper right")
     plt.xticks(rotation=90)
-    plt.xlabel("locations")
+    plt.xlabel("category")
     plt.ylabel("count")
     plt.savefig("test.png")
 
@@ -59,13 +59,13 @@ def plot(data,title=None) :
 
 
 
-titles=["training","validation","test"]
+titles=["train","valid","test"]
 plt.rcParams["figure.figsize"] = (20, 12)
 plt.rcParams["figure.dpi"] = 400
 fig,ax=plt.subplots()
 n_files=[train_set,valid_set,test_set]
 for ex,data in enumerate(n_files) :
-    print(ex)
+
     data.to_csv(titles[ex])
     data=data.groupby(["category"]).sum()["category_id"] # test location after?
     data.plot(kind="bar",label=titles[ex],ax=ax,color=f"C{ex+1}")
@@ -83,8 +83,8 @@ plt.savefig("histogram_distribution_datasets.png")
 
 
 #creating the new datasets :
-
-data_dir2="data_split2"
+id2number={6:0,1:1,33:2,9:3,3:4,11:5,8:6,16:7,5:8,10:9,7:10,51:11,99:12,39:13,34:14,37:15, 30:16,14:17,21:18,40:19,66:20,97:21}
+data_dir2="data_split_2"
 if not os.path.isdir(f"{data_dir2}"):
     os.mkdir(f"{data_dir2}")
 
@@ -93,7 +93,7 @@ from PIL import Image
 for ex,data in enumerate(n_files) :
     if not os.path.isdir(f"{data_dir2}/{titles[ex]}") :
         os.mkdir(f"{data_dir2}/{titles[ex]}")
-
+    print(titles[ex])
     for image in data.iterrows() :
         image=image[1]
         file_name=image["image_id"]
@@ -102,7 +102,7 @@ for ex,data in enumerate(n_files) :
         image_data = cv.imread(img_path)  # TODO verify dimension
         image_data = cv.resize(image_data, (320,320))
 
-        cv.imwrite(f"{data_dir2}/{titles[ex]}/{file_name}.jpg",image_data)
+        cv.imwrite(f"{data_dir2}/{titles[ex]}/images/{file_name}.jpg",image_data)
 
         bbox = image["bbox"]
         bbox_x0 = bbox[0]
@@ -112,7 +112,8 @@ for ex,data in enumerate(n_files) :
 
         width_pic = image["width"]
         height_pic = image["height"]
-        category_id = image["category_id"]
+        category_id = id2number[int(image["category_id"])]
+        #print("category_id", category_id)
 
         new_x = (bbox_x0 + bbox_width0 / 2) / width_pic
         new_y = (bbox_y0 + bbox_height0 / 2) / height_pic
@@ -120,7 +121,7 @@ for ex,data in enumerate(n_files) :
         new_width = bbox_width0 / width_pic
         new_height = bbox_height0 / height_pic
 
-        to_save = f"{data_dir2}/{titles[ex]}/{file_name}.txt"
+        to_save = f"{data_dir2}/{titles[ex]}/labels/{file_name}.txt"
 
         f = open(to_save, "w+")
         to_write = str(
