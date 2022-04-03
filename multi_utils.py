@@ -27,8 +27,8 @@ def set_parameter_requires_grad(model, feature_extract):
 
 
 preprocess = transforms.Compose([
-    transforms.Resize(320),
-    transforms.CenterCrop(320),
+    transforms.Resize(600),
+    transforms.CenterCrop(600),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
@@ -39,3 +39,4 @@ def collate_fn(batch):
     of objects and to handle varying size tensors as well.
     """
     return tuple(zip(*batch))
+

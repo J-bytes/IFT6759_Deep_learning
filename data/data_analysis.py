@@ -3,26 +3,39 @@ import matplotlib.pyplot as plt
 import os
 
 import pandas as pd
+import sklearn.model_selection
 
 data_dir="data/images"
-locations= {}
+data={}
 
 for dir in os.listdir(data_dir):
 
-    categories = {}
-    annotation=json.load(open(data_dir+"/"+dir+"/annotation.json"))
-    for img_file in annotation :
-        img_file=annotation[img_file]
-        category=img_file["category"]
-        if category in categories :
-            categories[category]+=1
-        else :
-            categories[category]=1
-    locations[dir]=categories
 
-stop=1
-data=pd.DataFrame(locations)
-data=data.fillna(0).T
+    annotation=json.load(open(data_dir+"/"+dir+"/annotation.json"))
+    data=data|annotation
+
+
+data=pd.DataFrame(data).T
+import numpy as np
+for animal_class in ["bat","insect","mountain_lion","lizard","badger"] :
+    data.replace(animal_class,np.nan,inplace=True)
+data.dropna(inplace=True)
+data.reset_index(inplace=True)
+X=data["file_name"]
+y=data["category_id"].astype(int)
+skf = sklearn.model_selection.StratifiedShuffleSplit(n_splits=1,test_size=0.1,random_state=11)
+splits=skf.split(X, y)
+for train,test in splits :
+    test_set=data.loc[test]
+    train_set=data.loc[train]
+
+
+train_set.reset_index(inplace=True)
+skf = sklearn.model_selection.StratifiedShuffleSplit(n_splits=1,test_size=0.3,random_state=11)
+splits=skf.split(train_set["file_name"], train_set["category_id"])
+for train,valid in splits :
+    valid_set=train_set.loc[valid]
+    train_set=train_set.loc[train]
 
 def plot(data,title=None) :
     from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
@@ -44,62 +57,18 @@ def plot(data,title=None) :
     plt.show()
 
 
-#--------------------------------------------------------
-#separation of data
-import numpy as np
-
-locations=list(data.axes[0].to_numpy())
-
-np.random.shuffle(locations)
-
-n=0
-#step 1 : count images
-for location in locations :
-    n+=len([name for name in os.listdir(f"{data_dir}/{location}")])
-
-#step 2 : split n images
-n1=int(0.1*n)
-training=int(5.1*n1)
-validation=int(3.9*n1)
-test=n1
-sizes=[]
 
 
-# step 3 : assign location to dataset
-n_images=n
-train_locations=[]
-valid_locations=[]
-test_location=[]
-step=0
-
-n_train=0
-n_valid=0
-n_test=0
-for location in data.axes[0].to_numpy() :
-    n_image=len([name for name in os.listdir(f"{data_dir}/{location}")])
-    n_images-=n_image
-    if n_images>(training+validation) :
-        n_test+=n_image
-        test_location.append(location)
-    elif n_images>training :
-        n_valid+=n_image
-        valid_locations.append(location)
-    else :
-        n_train+=n_image
-        train_locations.append(location)
-
-
-stop=1
 titles=["training","validation","test"]
-
 plt.rcParams["figure.figsize"] = (20, 12)
 plt.rcParams["figure.dpi"] = 400
 fig,ax=plt.subplots()
-n_files=[n_train,n_valid,n_test]
-for ex,location_list in enumerate([train_locations,valid_locations,test_location]) :
-    np.savetxt(f"{titles[ex]}.txt",np.array([str(n_files[ex])]+location_list).astype(int),fmt='%i', delimiter=",")
-    data2=data.T[location_list].T.sum()
-    data2.plot(kind="bar",label=titles[ex],ax=ax,color=f"C{ex+1}")
+n_files=[train_set,valid_set,test_set]
+for ex,data in enumerate(n_files) :
+    print(ex)
+    data.to_csv(titles[ex])
+    data=data.groupby(["category"]).sum()["category_id"] # test location after?
+    data.plot(kind="bar",label=titles[ex],ax=ax,color=f"C{ex+1}")
 
 
 
@@ -112,4 +81,50 @@ plt.savefig("histogram_distribution_datasets.png")
 
 
 
+
+#creating the new datasets :
+
+data_dir2="data_split2"
+if not os.path.isdir(f"{data_dir2}"):
+    os.mkdir(f"{data_dir2}")
+
+import cv2 as cv
+from PIL import Image
+for ex,data in enumerate(n_files) :
+    if not os.path.isdir(f"{data_dir2}/{titles[ex]}") :
+        os.mkdir(f"{data_dir2}/{titles[ex]}")
+
+    for image in data.iterrows() :
+        image=image[1]
+        file_name=image["image_id"]
+        location=image["location"]
+        img_path=f"{data_dir}/{location}/{file_name}.jpg"
+        image_data = cv.imread(img_path)  # TODO verify dimension
+        image_data = cv.resize(image_data, (320,320))
+
+        cv.imwrite(f"{data_dir2}/{titles[ex]}/{file_name}.jpg",image_data)
+
+        bbox = image["bbox"]
+        bbox_x0 = bbox[0]
+        bbox_y0 = bbox[1]
+        bbox_width0 = bbox[2]
+        bbox_height0 = bbox[3]
+
+        width_pic = image["width"]
+        height_pic = image["height"]
+        category_id = image["category_id"]
+
+        new_x = (bbox_x0 + bbox_width0 / 2) / width_pic
+        new_y = (bbox_y0 + bbox_height0 / 2) / height_pic
+
+        new_width = bbox_width0 / width_pic
+        new_height = bbox_height0 / height_pic
+
+        to_save = f"{data_dir2}/{titles[ex]}/{file_name}.txt"
+
+        f = open(to_save, "w+")
+        to_write = str(
+            str(category_id) + ' ' + str(new_x) + ' ' + str(new_y) + ' ' + str(new_width) + ' ' + str(new_height))
+        f.write(to_write)
+        f.close()
 
