@@ -38,15 +38,19 @@ else:
 
 ##---------------------------------------------------
 frcnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+
+#frcnn=torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+
+in_features = frcnn.roi_heads.box_predictor.cls_score.in_features
+# replace the pre-trained head with a new one
+frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, 17)
 #
 # # replace the classifier with a new one, that has
 # # num_classes which is user-defined
 # num_classes = 22  # 1 class (person) + background
 # # get number of input features for the classifier
-# in_features = frcnn.roi_heads.box_predictor.cls_score.in_features
-# # replace the pre-trained head with a new one
-# frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
 #
 
 
@@ -101,12 +105,12 @@ if __name__ == "__main__":
 
 
 
-    # train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
-    # val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
-    # test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
-    train_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
-    val_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
-    test_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
+    train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
+    val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
+    test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
+    # train_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
+    # val_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
+    # test_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
 
 
     for model in [frcnn]:
@@ -115,13 +119,13 @@ if __name__ == "__main__":
         val_dataset = CustomImageDataset(data_path, locations=val_list, transform=preprocess)
         test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
     
-        training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0,pin_memory=True,collate_fn=collate_fn)  # num_worker>0 not working on windows
-        validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=0,pin_memory=True,collate_fn=collate_fn)
+        training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=6,pin_memory=True,collate_fn=collate_fn)  # num_worker>0 not working on windows
+        validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=6,pin_memory=True,collate_fn=collate_fn)
         print("The data has now been loaded successfully into memory")
     
         model = model.to(device)
         experiment = Experiment(f"log/{model._get_name()}")
-        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
     
         # ------------training--------------------------------------------
         print("Starting training now")

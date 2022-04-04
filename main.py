@@ -20,11 +20,11 @@ torch.backends.cudnn.benchmark = True
 
 
 # -----------cuda optimization tricks-------------------------
-
-torch.autograd.set_detect_anomaly(False)
-torch.autograd.profiler.profile(False)
-torch.autograd.profiler.emit_nvtx(False)
-torch.backends.cudnn.benchmark = True
+#
+# torch.autograd.set_detect_anomaly(False)
+# torch.autograd.profiler.profile(False)
+# torch.autograd.profiler.emit_nvtx(False)
+# torch.backends.cudnn.benchmark = True
 
 
 # -----------model initialisation------------------------------
@@ -133,31 +133,31 @@ metrics={
 
 if __name__ == "__main__":
     # -------data initialisation-------------------------------
-    os.environ["WANDB_MODE"] = "offline"
+    #os.environ["WANDB_MODE"] = "offline"
     batch_size = 8
     data_path = f"data/data/images"
 
 
-    train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
-    val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
-    test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
+    # train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
+    # val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
+    # test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
 
 
 
-    train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
-    val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
-    test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
+    # train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
+    # val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
+    # test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
     # train_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
     # val_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
     # test_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
 
-    train_dataset = CustomImageDataset("data/data_split2/training", transform=preprocess)
-    val_dataset = CustomImageDataset("data/data_split2/validation", transform=preprocess)
-    test_dataset = CustomImageDataset("data/data_split2/test", transform=preprocess)
+    train_dataset = CustomImageDataset("data/data/data_split2/train", transform=preprocess)
+    val_dataset = CustomImageDataset("data/data/data_split2/valid", transform=preprocess)
+    test_dataset = CustomImageDataset("data/data/data_split2/test", transform=preprocess)
 
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8,
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4,
                                                   pin_memory=True)  # num_worker>0 not working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=8,
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size*2, shuffle=True, num_workers=4,
                                                     pin_memory=True)
     print("The data has now been loaded successfully into memory")
     # ------------training--------------------------------------------
@@ -174,9 +174,9 @@ if __name__ == "__main__":
             optimizer = torch.optim.AdamW(model.parameters())
             training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=15,patience=5,experiment=experiment,metrics=metrics)
 
-    for model in [vgg]:
+    for model in [alexnet]:
         model = model.to(device)
 
-        experiment = Experiment(f"log/{model._get_name()}")
-        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
+        experiment = Experiment(f"log/{model._get_name()}/AdamW1e-6")
+        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-6)
         training(model, optimizer, criterion, training_loader, validation_loader, device, verbose=False, epoch_max=50, patience=5, experiment=experiment, metrics=metrics, batch_size=batch_size)

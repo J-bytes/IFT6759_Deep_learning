@@ -93,6 +93,8 @@ from PIL import Image
 for ex,data in enumerate(n_files) :
     if not os.path.isdir(f"./data/{data_dir2}/{titles[ex]}") :
         os.mkdir(f"./data/{data_dir2}/{titles[ex]}")
+        os.mkdir(f"./data/{data_dir2}/{titles[ex]}/images")
+        os.mkdir(f"./data/{data_dir2}/{titles[ex]}/labels")
     print(titles[ex])
     for image in data.iterrows() :
         image=image[1]

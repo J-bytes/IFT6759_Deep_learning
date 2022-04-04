@@ -110,11 +110,11 @@ def test_loop(model,loader,device,verbose, epoch):
             scores = outputs[0]['scores'].data.numpy()
             # filter out boxes according to `detection_threshold`
             arg = np.argmax(scores)
-            print('scores', scores)
+            #print('scores', scores)
             if scores[arg] > 0.05:  # define some other threshold?
                 box = boxes[arg].copy()
                 pred = outputs[0]['labels'][arg]
-                print('pred', int(pred), scores[arg])
+                #print('pred', int(pred), scores[arg])
                 # results[0] = torch.cat((results[0], pred))
                 pred_label_list.append(int(pred))
         else:
@@ -178,6 +178,7 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
             #save the model after XX iterations : TODO : adjust when to save weights
             torch.save(model.state_dict(), f"models/models_weights/best_{model._get_name()}_{epoch}.pt")
             print('Saved Weights coz best loss found so far')
+
         else :
             patience-=1
             print("patience has been reduced by 1")

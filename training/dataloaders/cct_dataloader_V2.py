@@ -26,11 +26,11 @@ class CustomImageDataset(Dataset):
         self.annotation_files={}
 
 
-        for file in os.listdir(img_dir) :
+        for file in os.listdir(img_dir+"/images") :
             if file[::-1][0:3]=="jpg"[::-1] :
-                category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/{file[:-3]}txt",unpack=True)
+                category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/labels/{file[:-3]}txt",unpack=True)
                 if int(category_id) not in [66,97,40,14,21] :
-                    self.files.append(f"{self.img_dir}/{file}")
+                    self.files.append(f"{self.img_dir}/images/{file}")
 
 
     def __len__(self):
@@ -59,7 +59,7 @@ class CustomImageDataset(Dataset):
 
         #print("loc",location)
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
-        category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/{keyname[:-3]}txt",unpack=True)
+        category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/labels/{keyname[:-3]}txt",unpack=True)
         image = cv.imread(img_path) #TODO verify dimension
         image = cv.resize(image, (self.hauteur, self.largeur))
         
