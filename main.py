@@ -10,7 +10,7 @@ import numpy as np
 import torchvision
 #-----local imports---------------------------------------
 from training.training import training
-from training.dataloaders.cct_dataloader import CustomImageDataset
+from training.dataloaders.cct_dataloader_V2 import CustomImageDataset
 from utils import set_parameter_requires_grad,Experiment,preprocess
 torch.autograd.set_detect_anomaly(False)
 torch.autograd.profiler.profile(False)
@@ -74,22 +74,18 @@ def top1(true, pred):
     true = np.argmax(true, axis=1)
     # labels=np.unique(true)
     labels = np.arange(0, 16)
-<<<<<<< HEAD
-    return top_k_accuracy_score(true,pred,k=1,labels=labels)
 
-def top5(true,pred) :
-=======
-    return top_k_accuracy_score(true, pred, k=1, labels=labels)
+    return top_k_accuracy_score(true,pred,k=1,labels=labels)
 
 
 def top5(true, pred):
->>>>>>> df6b80ea9ca33f760ef8801444a48741a611d845
+
     true = np.argmax(true, axis=1)
     labels = np.arange(0, 16)
 
     return top_k_accuracy_score(true, pred, k=5, labels=labels)
 
-<<<<<<< HEAD
+
 def macro(true,pred) :
     true=np.argmax(true,axis=1)
     pred=np.argmax(pred,axis=1)
@@ -101,9 +97,6 @@ def f1(true,pred) :
     pred=np.argmax(pred,axis=1)
     return sklearn.metrics.f1_score(true,pred,average='weighted') #weighted??
 
-def auc(true,pred):
-=======
-
 def f1(true, pred):
     true = np.argmax(true, axis=1)
     pred = np.argmax(pred, axis=1)
@@ -112,7 +105,7 @@ def f1(true, pred):
 
 def auc(true, pred):
     print('auc true pred', true, pred)
->>>>>>> df6b80ea9ca33f760ef8801444a48741a611d845
+
     true = np.argmax(true, axis=1)
     labels = np.arange(0, 16)
     return sklearn.metrics.roc_auc_score(true, pred, multi_class="ovo", labels=labels)  # ovo???
@@ -128,7 +121,7 @@ def recall(true,pred):
     return sklearn.metrics.recall_score(true,pred,average='macro')  
 
 
-<<<<<<< HEAD
+
 metrics={
     "f1"    :    f1,
     "macro":     macro,
@@ -136,28 +129,20 @@ metrics={
     "recall":    recall,
     "top-1" :    top1,
     "top-5" :    top5
-=======
-metrics = {
-    "f1": f1,
-    "top-1": top1,
-    "top-5": top5,
-    # "auc": auc
->>>>>>> df6b80ea9ca33f760ef8801444a48741a611d845
 }
 
 if __name__ == "__main__":
     # -------data initialisation-------------------------------
-    batch_size = 64
+    os.environ["WANDB_MODE"] = "offline"
+    batch_size = 8
     data_path = f"data/data/images"
 
-<<<<<<< HEAD
+
     train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
     val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
     test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
-=======
-    if model._get_name()=="FasterRCNN" :
-        from training.dataloaders.frcnn_dataloader import CustomImageDataset
-        from training.frcnn_training import training
+
+
 
     train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
     val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
@@ -165,10 +150,10 @@ if __name__ == "__main__":
     # train_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
     # val_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
     # test_list = np.loadtxt(f"data/test_test.txt")[1::].astype(int)
->>>>>>> df6b80ea9ca33f760ef8801444a48741a611d845
-    train_dataset = CustomImageDataset(data_path, locations=train_list, transform=preprocess)
-    val_dataset = CustomImageDataset(data_path, locations=val_list, transform=preprocess)
-    test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
+
+    train_dataset = CustomImageDataset("data/data_split2/training", transform=preprocess)
+    val_dataset = CustomImageDataset("data/data_split2/validation", transform=preprocess)
+    test_dataset = CustomImageDataset("data/data_split2/test", transform=preprocess)
 
     training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8,
                                                   pin_memory=True)  # num_worker>0 not working on windows
@@ -177,7 +162,7 @@ if __name__ == "__main__":
     print("The data has now been loaded successfully into memory")
     # ------------training--------------------------------------------
     print("Starting training now")
-<<<<<<< HEAD
+
    # if input("do you want to clear old log files? (yes/no)").lower()=="yes" :
 
     if 1==1 :
@@ -188,8 +173,6 @@ if __name__ == "__main__":
             experiment = Experiment(f"log/{model._get_name()}")
             optimizer = torch.optim.AdamW(model.parameters())
             training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=15,patience=5,experiment=experiment,metrics=metrics)
-=======
->>>>>>> df6b80ea9ca33f760ef8801444a48741a611d845
 
     for model in [vgg]:
         model = model.to(device)
