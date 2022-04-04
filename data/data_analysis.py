@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import sklearn.model_selection
 
-data_dir="data/images"
+data_dir=".\data\images"
 data={}
 
 for dir in os.listdir(data_dir):
@@ -83,16 +83,16 @@ plt.savefig("histogram_distribution_datasets.png")
 
 
 #creating the new datasets :
-id2number={6:0,1:1,33:2,9:3,3:4,11:5,8:6,16:7,5:8,10:9,7:10,51:11,99:12,39:13,34:14,37:15, 30:16,14:17,21:18,40:19,66:20,97:21}
-data_dir2="data_split_2"
-if not os.path.isdir(f"{data_dir2}"):
-    os.mkdir(f"{data_dir2}")
+id2number={6:0,1:1,33:2,9:3,3:4,11:5,8:6,16:7,5:8,10:9,7:10,51:11,99:12,34:13,30:14}
+data_dir2="data_split2"
+if not os.path.isdir(f"./data/{data_dir2}"):
+    os.mkdir(f"./data/{data_dir2}")
 
 import cv2 as cv
 from PIL import Image
 for ex,data in enumerate(n_files) :
-    if not os.path.isdir(f"{data_dir2}/{titles[ex]}") :
-        os.mkdir(f"{data_dir2}/{titles[ex]}")
+    if not os.path.isdir(f"./data/{data_dir2}/{titles[ex]}") :
+        os.mkdir(f"./data/{data_dir2}/{titles[ex]}")
     print(titles[ex])
     for image in data.iterrows() :
         image=image[1]
@@ -100,9 +100,9 @@ for ex,data in enumerate(n_files) :
         location=image["location"]
         img_path=f"{data_dir}/{location}/{file_name}.jpg"
         image_data = cv.imread(img_path)  # TODO verify dimension
-        image_data = cv.resize(image_data, (320,320))
+        image_data = cv.resize(image_data, (608,608))
 
-        cv.imwrite(f"{data_dir2}/{titles[ex]}/images/{file_name}.jpg",image_data)
+        cv.imwrite(f"./data/{data_dir2}/{titles[ex]}/images/{file_name}.jpg",image_data)
 
         bbox = image["bbox"]
         bbox_x0 = bbox[0]
@@ -121,7 +121,7 @@ for ex,data in enumerate(n_files) :
         new_width = bbox_width0 / width_pic
         new_height = bbox_height0 / height_pic
 
-        to_save = f"{data_dir2}/{titles[ex]}/labels/{file_name}.txt"
+        to_save = f"./data/{data_dir2}/{titles[ex]}/labels/{file_name}.txt"
 
         f = open(to_save, "w+")
         to_write = str(
