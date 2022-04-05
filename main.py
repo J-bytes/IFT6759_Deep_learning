@@ -98,7 +98,7 @@ if __name__=="__main__" :
     # -------data initialisation-------------------------------
     print("dd", os.getcwd())
     data_path = f"data/data/images"
-
+    batch_size = 16
     #train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
     #val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
     train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
@@ -111,11 +111,11 @@ if __name__=="__main__" :
     # training_loader=torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # validation_loader=torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, num_workers=5,pin_memory=True)
     # train_dataset=CustomImageDataset(data_path,locations=[11])
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, num_workers=4,
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4,
                                                   pin_memory=True,collate_fn=collate_fn)  # num_worker>0 n0t working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=10, shuffle=True, num_workers=4,
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4,
                                                     pin_memory=True,collate_fn=collate_fn)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=True, num_workers=0,
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0,
                                                     pin_memory=True,collate_fn=collate_fn)
     print("The data has now been loaded successfully into memory")
     #------------training--------------------------------------------
@@ -127,7 +127,7 @@ if __name__=="__main__" :
 
             experiment = Experiment(f"log/{model._get_name()}")
             optimizer = torch.optim.AdamW(model.parameters())
-            #training(model,optimizer,training_loader,validation_loader,device,verbose=False,epoch_max=1,patience=5,experiment=experiment,metrics=metrics)
-            training_pytorch(model, optimizer, training_loader, validation_loader, test_loader, device, verbose=False, epoch_max=50,
-                              patience=5, experiment=experiment, metrics=metrics)
+            training(model,optimizer,training_loader,validation_loader,device,verbose=False,epoch_max=1,patience=5,experiment=experiment,metrics=metrics, batch_size=batch_size)
+            #training_pytorch(model, optimizer, training_loader, validation_loader, test_loader, device, verbose=False, epoch_max=50,
+            #                  patience=5, experiment=experiment, metrics=metrics)
 
