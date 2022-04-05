@@ -57,26 +57,48 @@ def plot(data,title=None) :
     plt.show()
 
 
+# titles=["train","valid","test"]
+# plt.rcParams["figure.figsize"] = (20, 12)
+# plt.rcParams["figure.dpi"] = 400
+# fig,ax=plt.subplots()
+# n_files=[train_set,valid_set,test_set]
+# for ex,data in enumerate(n_files) :
+#
+#     data.to_csv(titles[ex])
+#     data=data.groupby(["category"]).sum()["category_id"] # test location after?
+#     data.plot(kind="bar",label=titles[ex],ax=ax,color=f"C{ex+1}")
 
+# plt.xticks(rotation=90)
+# plt.xlabel("locations")
+# plt.ylabel("count")
+# plt.legend()
+# plt.title("distribution of classes in the differents datasets")
+# plt.savefig("histogram_distribution_datasets.png")
 
-titles=["train","valid","test"]
+# titles = ["train", "valid", "test"]
+# plt.rcParams["figure.figsize"] = (30,24)
+# plt.rcParams["figure.dpi"] = 400
+# plt.rcParams["font.size"] = 30
+# fig,ax=plt.subplots()
+# for ex, data in enumerate(n_files):
+#     data.to_csv(titles[ex])
+#     data = data.groupby(["category"]).sum()["category_id"]  # test location after?
+#     data.plot(kind="bar", label=titles[ex], ax=ax, color=f"C{ex + 1}")
+
+titles = ["train", "valid", "test"]
 plt.rcParams["figure.figsize"] = (20, 12)
 plt.rcParams["figure.dpi"] = 400
-fig,ax=plt.subplots()
-n_files=[train_set,valid_set,test_set]
-for ex,data in enumerate(n_files) :
-
+fig, ax = plt.subplots()
+n_files = [train_set, valid_set, test_set]
+for ex, data in enumerate(n_files):
     data.to_csv(titles[ex])
-    data=data.groupby(["category"]).sum()["category_id"] # test location after?
+    data = data.groupby(["category"]).sum()["category_id"]  # test location after?
     data.plot(kind="bar",label=titles[ex],ax=ax,color=f"C{ex+1}")
-
-
-
-plt.xticks(rotation=90)
-plt.xlabel("locations")
-plt.ylabel("count")
-plt.legend()
-plt.title("distribution of classes in the differents datasets")
+plt.xticks(rotation=45, fontsize=25)
+plt.xlabel("Classes")#, fontsize = 60)
+plt.ylabel("Count")#, fontsize = 60)
+plt.legend()#prop={'size':45})
+#plt.title("Distribution of classes in the differents datasets", fontsize = 30)
 plt.savefig("histogram_distribution_datasets.png")
 
 
