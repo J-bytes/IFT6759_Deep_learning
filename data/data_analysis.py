@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import sklearn.model_selection
 
-data_dir=".\data\images"
+data_dir="./data/images"
 data={}
 
 for dir in os.listdir(data_dir):
