@@ -27,10 +27,9 @@ class CustomImageDataset(Dataset):
 
 
         for file in os.listdir(img_dir+"/images") :
-            if file[::-1][0:3]=="jpg"[::-1] :
-                category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/labels/{file[:-3]}txt",unpack=True)
-                if int(category_id) not in [20,21,19,17,18] :
-                    self.files.append(f"{self.img_dir}/images/{file}")
+            category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/labels/{file[:-3]}txt",unpack=True)
+            if int(category_id) not in [20,21,19,17,18] :
+                self.files.append(f"{self.img_dir}/images/{file}")
 
 
     def __len__(self):

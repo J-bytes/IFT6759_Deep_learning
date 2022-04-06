@@ -134,7 +134,7 @@ metrics={
 if __name__ == "__main__":
     # -------data initialisation-------------------------------
     #os.environ["WANDB_MODE"] = "offline"
-    batch_size = 8
+    batch_size = 4
     data_path = f"data/data/images"
 
 
@@ -155,9 +155,9 @@ if __name__ == "__main__":
     val_dataset = CustomImageDataset("data/data/data_split2/valid", transform=preprocess)
     test_dataset = CustomImageDataset("data/data/data_split2/test", transform=preprocess)
 
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0,
+    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4,
                                                   pin_memory=True)  # num_worker>0 not working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size*2, shuffle=True, num_workers=0,
+    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4,
                                                     pin_memory=True)
     print("The data has now been loaded successfully into memory")
     # ------------training--------------------------------------------
@@ -173,10 +173,3 @@ if __name__ == "__main__":
         experiment = Experiment(f"log/{model._get_name()}/v2")
         optimizer = torch.optim.AdamW(model.parameters())
         training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=50,patience=5,experiment=experiment,metrics=metrics)
-
-    for model in [alexnet]:
-        model = model.to(device)
-
-        experiment = Experiment(f"log/{model._get_name()}/v2")
-        optimizer = torch.optim.AdamW(model.parameters())
-        training(model, optimizer, criterion, training_loader, validation_loader, device, verbose=False, epoch_max=50, patience=5, experiment=experiment, metrics=metrics, batch_size=batch_size)
