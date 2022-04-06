@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import sklearn.model_selection
 
-data_dir="./data/images"
+data_dir="data/data/images"
 data={}
 
 for dir in os.listdir(data_dir):
@@ -101,10 +101,19 @@ plt.legend()#prop={'size':45})
 #plt.title("Distribution of classes in the differents datasets", fontsize = 30)
 plt.savefig("histogram_distribution_datasets.png")
 
-
-
-
 #creating the new datasets :
+# Mapping :
+# 0 : bobcat         # 9 : rabbit
+# 1 : opossum        # 10 : skunk
+# 2 : car            # 11 : fox
+# 3 : coyote         # 12 : rodent
+# 4 : racoon         # 13 : deer
+# 5 : bird           # 14 : empty
+# 6 : dog
+# 7 : cat
+# 8 : squirrel
+
+
 id2number={6:0,1:1,33:2,9:3,3:4,11:5,8:6,16:7,5:8,10:9,7:10,51:11,99:12,34:13,30:14}
 data_dir2="data_split2"
 if not os.path.isdir(f"./data/{data_dir2}"):
