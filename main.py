@@ -52,20 +52,6 @@ resnext50.fc = torch.nn.Linear(2048, 14)
 
 
 
-##----------------------------------------------------
-# frcnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-# from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-#
-# # replace the classifier with a new one, that has
-# # num_classes which is user-defined
-# num_classes = 22  # 1 class (person) + background
-# # get number of input features for the classifier
-# in_features = frcnn.roi_heads.box_predictor.cls_score.in_features
-# # replace the pre-trained head with a new one
-# frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-#
-
-
 criterion = torch.nn.CrossEntropyLoss()  # to replace..?
 print("The model has now been successfully loaded into memory")
 
@@ -138,7 +124,7 @@ metrics={
 if __name__ == "__main__":
     # -------data initialisation-------------------------------
     #os.environ["WANDB_MODE"] = "offline"
-    batch_size = 12
+    batch_size = 16
     data_path = f"data/data/images"
 
 
@@ -177,8 +163,8 @@ if __name__ == "__main__":
 
 
     for model in [resnext50] :
-        model = model.to(device)
 
+        model = model.to(device)
         experiment = Experiment(f"log/{model._get_name()}/v3")
         optimizer = torch.optim.AdamW(model.parameters())
         training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=50,patience=5,experiment=experiment,metrics=metrics)
