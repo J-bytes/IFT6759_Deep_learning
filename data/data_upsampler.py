@@ -14,14 +14,18 @@ if not os.path.isdir(new_img_dir) :
 def upsampler(classes_id,n_up) :
 
     #step 1 : find the file in the specific class
-    for keyname in os.listdir(f"{new_img_dir}/train/labels") :
+    for keyname in os.listdir(f"{new_img_dir}/train/images") :
 
         # location=img_path[len(self.img_dir)+1:len(self.img_dir)+3]
 
         # print("loc",location)
         # location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
-        category_id, new_x, new_y, new_width, new_height = np.loadtxt(f"{new_img_dir}/train/labels/{keyname}",
-                                                                      unpack=True)
+        try :
+            category_id, new_x, new_y, new_width, new_height = np.loadtxt(f"{new_img_dir}/train/labels/{keyname}",
+                                                                unpack=True)
+        except:
+            print(f"the txt file was not found for {keyname}")
+
         if int(category_id) in classes_id :
             for i in range(n_up) :
                 #we then need to make copies of this image
