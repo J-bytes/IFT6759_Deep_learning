@@ -24,12 +24,12 @@ class AnimalsClassScraper:
     We then merge the original dataset with the new augmented images and run the next experiment.
     """
     def __init__(self, ):
-        self.train_label_path = "data\\data_split2\\train\\labels"
-        self.valid_label_path = "data\\data_split2\\valid\\labels"
-        self.test_label_path = "data\\data_split2\\test\\labels"
-        self.train_image_path = "data\\data_split2\\train\\images"
-        self.valid_image_path = "data\\data_split2\\valid\\images"
-        self.test_image_path = "data\\data_split2\\test\\images"
+        self.train_label_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_augmented\train\labels"
+        self.valid_label_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_augmented\valid\labels"
+        self.test_label_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_augmented\test\labels"
+        self.train_image_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_augmented\train\images"
+        self.valid_image_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_augmented\valid\images"
+        self.test_image_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_augmented\test\images"
 
         self.to_collect_label_name = ["bird", "squirrel", "rodent"]
         self.to_collect_label_id = [5, 8, 12]
