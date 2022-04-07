@@ -13,11 +13,12 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
     results=[torch.tensor([]),torch.tensor([])]
     model.train()
 
-    for inputs,labels in loader:
+    for inputs,labels,files,bboxes in loader:
         # get the inputs; data is a list of [inputs, labels]
+
         batch_size=inputs.shape[0]
         results[0]=torch.cat((results[0],labels),dim=0)
-        inputs,labels=inputs.to(device),labels.to(device)
+        inputs,labels=inputs.to(device).float(),labels.to(device).float()[:,1]
 
         # zero the parameter gradients
         for param in model.parameters():
@@ -49,11 +50,11 @@ def validation_loop(model,loader,criterion,device):
     model.eval()
     results = [torch.tensor([]), torch.tensor([])]
     with torch.no_grad() :
-        for inputs,labels in loader:
+        for inputs,labels,files,bboxes in loader:
             # get the inputs; data is a list of [inputs, labels]
             batch_size=inputs.shape[0]
             results[0] = torch.cat((results[0], labels),dim=0)
-            inputs,labels=inputs.to(device),labels.to(device)
+            inputs,labels=inputs.to(device).float(),labels.to(device).float()[:,1]
 
             # forward + backward + optimize
             outputs = model(inputs)

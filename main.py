@@ -11,7 +11,7 @@ import torchvision
 #-----local imports---------------------------------------
 from training.training import training
 from training.dataloaders.cct_dataloader_V2 import CustomImageDataset
-from utils import set_parameter_requires_grad,Experiment,preprocess
+from utils import Experiment,preprocess
 
 
 
@@ -47,9 +47,9 @@ alexnet = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=True)
 alexnet.classifier[6] = torch.nn.Linear(alexnet.classifier[6].in_features, 14, bias=True)
 ##---------------------------------------------------
 
-resnext50 = torchvision.models.resnext50_32x4d(pretrained=True)
-resnext50.fc = torch.nn.Linear(2048, 14)
-
+# resnext50 = torchvision.models.resnext50_32x4d(pretrained=True)
+# resnext50.fc = torch.nn.Linear(2048, 14)
+#
 
 
 criterion = torch.nn.CrossEntropyLoss()  # to replace..?
@@ -124,36 +124,27 @@ metrics={
 if __name__ == "__main__":
     # -------data initialisation-------------------------------
     #os.environ["WANDB_MODE"] = "offline"
-    batch_size = 16
+    batch_size = 148
     data_path = f"data/data/images"
 
 
-    # train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
-    # val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
-    # test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
 
-
-
-    # train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
-    # val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
-    # test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
     # train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
     # val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
     # train_dataset = CustomImageDataset("data/data/images",locations=train_list, transform=preprocess)
     # val_dataset = CustomImageDataset("data/data/images",locations=val_list, transform=preprocess)
 
+    #
+    # train_dataset = CustomImageDataset("data/data/data_split3/train", transform=preprocess)
+    # val_dataset = CustomImageDataset("data/data/data_split3/valid", transform=preprocess)
+    # training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8,
+    #                                               pin_memory=True)  # num_worker>0 not working on windows
+    # validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=8,
+    #                                                 pin_memory=True)
 
-    train_dataset = CustomImageDataset("data/data/data_split3/train", transform=preprocess)
-    val_dataset = CustomImageDataset("data/data/data_split3/valid", transform=preprocess)
-    # test_dataset = CustomImageDataset("data/data/data_split2/test", transform=preprocess)
-    # train_dataset = CustomImageDataset("data/data/animals-detection-mini.v1-mini.yolov5pytorch/train", transform=preprocess)
-    # val_dataset = CustomImageDataset("data/data/animals-detection-mini.v1-mini.yolov5pytorch/valid", transform=preprocess)
-    # test_dataset = CustomImageDataset("data/data/animals-detection-mini.v1-mini.yolov5pytorch/test", transform=preprocess)
-
-    training_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8,
-                                                  pin_memory=True)  # num_worker>0 not working on windows
-    validation_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=8,
-                                                    pin_memory=True)
+    from yolo_utils import create_dataloader
+    training_loader, train_dataset = create_dataloader(path="data/data/data_split3/train/images", imgsz=320, batch_size=120, stride=1)
+    validation_loader,val_dataset=create_dataloader(path="data/data/data_split3/valid/images", imgsz=320, batch_size=120, stride=1)
     print("The data has now been loaded successfully into memory")
     # ------------training--------------------------------------------
     print("Starting training now")
@@ -162,9 +153,10 @@ if __name__ == "__main__":
 
 
 
-    for model in [resnext50] :
+    for model in [alexnet] :
 
         model = model.to(device)
         experiment = Experiment(f"log/{model._get_name()}/v3")
         optimizer = torch.optim.AdamW(model.parameters())
         training(model,optimizer,criterion,training_loader,validation_loader,device,verbose=False,epoch_max=50,patience=5,experiment=experiment,metrics=metrics)
+
