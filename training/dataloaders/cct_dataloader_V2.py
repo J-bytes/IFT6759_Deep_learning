@@ -11,8 +11,6 @@ import cv2 as cv
 from PIL import Image
 import re
 
-id2number={6:0,1:1,33:2,9:3,3:4,11:5,8:6,16:7,5:8,10:9,7:10,51:11,99:12,39:13,34:14,37:15,30:16,14:17,21:18,40:19,66:20,97:21}
-
 
 class CustomImageDataset(Dataset):
     def __init__(self, img_dir, transform=None):
@@ -36,9 +34,9 @@ class CustomImageDataset(Dataset):
         return len(self.files)
 
     def label_transform(self,label_id): # encode one_hot
-        if int(label_id)==30 :
-            return torch.zeros((16))
-        one_hot= torch.zeros((16))
+        if int(label_id)==14 :
+            return torch.zeros((14))
+        one_hot= torch.zeros((14))
         one_hot[int(label_id)]=1
         return one_hot.float()
 

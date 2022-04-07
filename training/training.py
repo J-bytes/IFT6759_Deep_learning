@@ -15,6 +15,7 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
 
     for inputs,labels in loader:
         # get the inputs; data is a list of [inputs, labels]
+        batch_size=inputs.shape[0]
         results[0]=torch.cat((results[0],labels),dim=0)
         inputs,labels=inputs.to(device),labels.to(device)
 
@@ -29,7 +30,7 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
-        running_loss+=loss.detach()
+        running_loss+=loss.detach()/batch_size
 
         if verbose and i % 20 == 0:
             print(f" epoch : {epoch} , iteration :{i} ,running_loss : {running_loss}")
@@ -50,6 +51,7 @@ def validation_loop(model,loader,criterion,device):
     with torch.no_grad() :
         for inputs,labels in loader:
             # get the inputs; data is a list of [inputs, labels]
+            batch_size=inputs.shape[0]
             results[0] = torch.cat((results[0], labels),dim=0)
             inputs,labels=inputs.to(device),labels.to(device)
 
@@ -57,7 +59,7 @@ def validation_loop(model,loader,criterion,device):
             outputs = model(inputs)
             results[1] = torch.cat((results[1], torch.nn.functional.softmax(outputs,dim=1).detach().cpu()),dim=0)
             loss = criterion(outputs, labels)
-            running_loss+=loss.detach()
+            running_loss+=loss.detach()/batch_size
 
 
             #
@@ -77,7 +79,7 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
     val_loss_list=[]
     best_loss=np.inf
     wandb.watch(model, log_freq=batch_size)
-
+    patience_init=patience
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
 
         if not verbose:
@@ -106,6 +108,7 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
             best_loss=val_loss
             #save the model after XX iterations : TODO : adjust when to save weights
             torch.save(model.state_dict(), f"models/models_weights/{model._get_name()}_{epoch}.pt")
+            patience=patience_init
         else :
             patience-=1
             print("patience has been reduced by 1")
