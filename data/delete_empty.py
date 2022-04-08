@@ -9,9 +9,9 @@ class DeleteEmpty:
     """
 
     def __init__(self, ):
-        self.train_path = "data\\data_split2\\train\\labels"
-        self.valid_path = "data\\data_split2\\valid\\labels"
-        self.test_path = "data\\data_split2\\test\\labels"
+        self.train_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_split2\train\labels"
+        self.valid_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_split2\valid\labels"
+        self.test_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_split2\test\labels"
         self.to_delete_label = "empty"
         self.to_delete_id = 14
 

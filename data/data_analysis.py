@@ -101,8 +101,7 @@ plt.legend()#prop={'size':45})
 #plt.title("Distribution of classes in the differents datasets", fontsize = 30)
 plt.savefig("histogram_distribution_datasets.png")
 
-#creating the new datasets :
-# Mapping :
+# Mapping entre category id et animal:
 # 0 : bobcat         # 9 : rabbit
 # 1 : opossum        # 10 : skunk
 # 2 : car            # 11 : fox
@@ -114,6 +113,7 @@ plt.savefig("histogram_distribution_datasets.png")
 # 8 : squirrel
 
 
+#creating the new datasets :
 id2number={6:0,1:1,33:2,9:3,3:4,11:5,8:6,16:7,5:8,10:9,7:10,51:11,99:12,34:13,30:14}
 data_dir2="data_split2"
 if not os.path.isdir(f"./data/{data_dir2}"):
