@@ -2,22 +2,30 @@ import os
 import json
 class DeleteEmpty:
     """
-    This class is used to delete all the .txt file which contain the label "empty"
-    (id=30 or 14 depending on the dataset version).
+    This class is used to delete all the .txt file which
+    contain the label "empty"(id=30 or 14 depending
+    on the dataset version).
     Our basic dataset contains these by default but we need to delete
     these .txt files in order to feed yolo wiht the dataset.
     """
 
-    def __init__(self, ):
+    def __init__(
+        self,
+    ):
         self.train_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_split2\train\labels"
         self.valid_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_split2\valid\labels"
         self.test_path = r"C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_split2\test\labels"
         self.to_delete_label = "empty"
         self.to_delete_id = 14
 
-   # C:\Users\baril\OneDrive\Desktop\IFT6759_Deep_learning\data\data_split2\test\labels
-    def delete(self, ):
-        datasets = {'train': self.train_path, 'valid': self.valid_path, 'test': self.test_path}
+    def delete(
+        self,
+    ):
+        datasets = {
+            "train": self.train_path,
+            "valid": self.valid_path,
+            "test": self.test_path,
+        }
         count = 0
         deleted = []
         for dataset_name, dataset_path in datasets.items():
