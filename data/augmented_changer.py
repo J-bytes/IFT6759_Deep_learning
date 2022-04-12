@@ -6,7 +6,7 @@ import pandas as pd
 import shutil
 
 #global params
-label_dir="data/data_augmented/train/labels"
+label_dir="data/train_augmented/train_augmented/labels"
 
 def changer() :
 

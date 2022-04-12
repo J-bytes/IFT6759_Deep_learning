@@ -33,7 +33,7 @@ for i in used_category_names :
 
 data=json.load(open("caltech_images_20210113.json"))
 data_dir="data"
-new_data_dir="data/test_set2/test"
+new_data_dir="data/test_set3/test"
 # format data better cuz they did a shit job
 annotations = {}
 for file in data["annotations"]:
@@ -62,9 +62,6 @@ def part1() :
                     image_count[categories[category_id]]+=1
 
 
-mapping2={
-
-}
 
 def part2() :
     #assuming roboflow annotation has been done and pushed to test/labels
@@ -82,40 +79,50 @@ def part2() :
 
 
         file_id=file.split("_")[0]
-        annot = np.loadtxt(f"{new_data_dir}/labels/{file[:-4]}.txt")
-        if len(annot)!=0 :
+        empty = False
+        try :
 
-            num_lines = sum(1 for line in open(f"{new_data_dir}/labels/{file[:-4]}.txt"))
-            annot=annot.reshape(num_lines,5)
+            annot = np.loadtxt(f"{new_data_dir}/labels/{file[:-4]}.txt")
+            num_lines = sum(1 for line in open('my_file.txt'))
+        except :
+            empty=True
+
+        if not empty : # we have data
+
             os.remove(f"{new_data_dir}/labels/{file[:-4]}.txt")
             with open(f"{new_data_dir}/labels/{file[:-4]}.txt","a") as f :
                 for ex,_ in enumerate(annot) :
                     category_id, new_x, new_y, new_width, new_height=annot[ex]
-                    id=mapping[categories[annotations[file_id]["category_id"]]]
-                    if id==14 :
-                        print(f"The file is said to be empty!. \n {file}")
-                        #shutil.copy(new_data_dir + "/images/" + file, should_empty + "/" + file)
+
+
+                    if mapping[categories[annotations[file_id]["category_id"]]] == 14:
+                        print(f"The file has a label and yet should  be empty. \n {file}")
+                        # shutil.copy(new_data_dir+"/images/"+file,not_empty+"/"+file)
                         os.remove(new_data_dir + "/images/" + file)
-                        os.remove(new_data_dir + "/labels/" + file[:-4]+".txt")
-                        count+=1
-                    annot[ex,0]=id
+                        to_delete=
+                        count += 1
+                        labels[file] = categories[annotations[file_id]["category_id"]]
+                    else :
+                        to_write = str(
+                            str(int(category_id)) + ' ' + str(new_x) + ' ' + str(new_y) + ' ' + str(new_width) + ' ' + str(
+                                new_height))
 
-
-                #np.savetxt(f"{new_data_dir}/labels/{file[:-4]}.txt",annot)
-
-                    to_write = str(
-                        str(int(category_id)) + ' ' + str(new_x) + ' ' + str(new_y) + ' ' + str(new_width) + ' ' + str(new_height))
-
-                    f.write(to_write)
+                        f.write(to_write)
 
         else :
-            if mapping[categories[annotations[file_id]["category_id"]]] !=14 :
-                print(f"The file has no label and yet should not be empty. \n {file}")
-                #shutil.copy(new_data_dir+"/images/"+file,not_empty+"/"+file)
-                os.remove(new_data_dir+"/images/"+file)
-                os.remove(new_data_dir+"/labels/"+file[:-4]+".txt")
-                count+=1
-                labels[file]=categories[annotations[file_id]["category_id"]]
+            os.remove(new_data_dir + "/labels/" + file[:-4] + ".txt")
+            id = mapping[categories[annotations[file_id]["category_id"]]]
+            if id != 14:
+                print(f"The file is said to be not empty!. \n {file}")
+                # shutil.copy(new_data_dir + "/images/" + file, should_empty + "/" + file)
+                os.remove(new_data_dir + "/images/" + file)
+
+                count += 1
+
+
+            # np.savetxt(f"{new_data_dir}/labels/{file[:-4]}.txt",annot)
+
+
 
     f= open("should_empty_labels.json","w+")
     json.dump(labels,f)
@@ -132,9 +139,9 @@ def part3() : # lets plot a histogram to confirm everything is A-ok
         file_id=file.split("_")[0]
         data[categories[annotations[file_id]["category_id"]]]=data.get(categories[annotations[file_id]["category_id"]],0)+1
 
-    data = pd.DataFrame(data.items())
+    data = pd.DataFrame(data.items(),index=data.keys())
     data.plot(kind="bar")
-    plt.xticks(rotation=45, fontsize=25)
+    plt.xticks()
     plt.xlabel("Classes")  # , fontsize = 60)
     plt.ylabel("Count")  # , fontsize = 60)
     plt.legend()  # prop={'size':45})
