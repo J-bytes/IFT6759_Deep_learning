@@ -25,7 +25,17 @@ class CustomImageDataset(Dataset):
 
 
         for file in os.listdir(img_dir+"/images") :
-            category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/labels/{file[:-3]}txt",unpack=True)
+            try :
+                category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/labels/{file[:-3]}txt",unpack=True)
+            except :
+                category_id=14 # the image is empty
+                new_x, new_y, new_width, new_height=0,0,0,0
+
+            category_id=np.array([category_id])[0]
+            try :
+                category_id=category_id[0]
+            except :
+                pass
             if int(category_id) not in [20,21,19,17,18] :
                 self.files.append(f"{self.img_dir}/images/{file}")
 
@@ -50,7 +60,18 @@ class CustomImageDataset(Dataset):
 
         #print("loc",location)
         #location=re.search("/[0-9][0-9]/",img_path).group()[1:-1]
-        category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/labels/{keyname[:-3]}txt",unpack=True)
+        try:
+            category_id, new_x, new_y, new_width, new_height = np.loadtxt(f"{self.img_dir}/labels/{keyname[:-3]}txt",
+                                                                          unpack=True)
+        except:
+            category_id = 14  # the image is empty
+            new_x, new_y, new_width, new_height = 0, 0, 0, 0
+
+        try:
+            category_id = category_id[0]
+        except:
+            pass
+
         image = cv.imread(img_path) #TODO verify dimension
         image = cv.resize(image, (self.hauteur, self.largeur))
         

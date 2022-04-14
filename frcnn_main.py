@@ -11,7 +11,7 @@ import torchvision
 #-----local imports---------------------------------------
 from training.dataloaders.frcnn_dataloader import CustomImageDataset
 from training.frcnn_training import training
-from utils import set_parameter_requires_grad,Experiment,preprocess,collate_fn
+from custom_utils import set_parameter_requires_grad,Experiment,preprocess,collate_fn
 
 
 
@@ -37,14 +37,14 @@ else:
 
 
 ##---------------------------------------------------
-frcnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+frcnn = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
 
 #frcnn=torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 in_features = frcnn.roi_heads.box_predictor.cls_score.in_features
 # replace the pre-trained head with a new one
-frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, 17)
+frcnn.roi_heads.box_predictor = FastRCNNPredictor(in_features, 14)
 #
 # # replace the classifier with a new one, that has
 # # num_classes which is user-defined
@@ -60,7 +60,7 @@ print("The model has now been successfully loaded into memory")
 #------------defining metrics--------------------------------------------
 import sklearn
 from sklearn.metrics import top_k_accuracy_score
-num_classes=17
+num_classes=15
 def top1(true,pred) :
     true = np.argmax(true, axis=1)
     #labels=np.unique(true)

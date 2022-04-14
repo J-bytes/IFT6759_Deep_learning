@@ -1,8 +1,0 @@
-train: C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_augmented\train  
-val: C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_augmented\valid  
-test:  C:\Users\cdetr\Documents\GitHub\UdeM\selim_project\IFT6759_Deep_learning\data\data_augmented\test 
-
-nc: 14
-names: ["bobcat","opossum","car","coyote","raccoon","bird","dog","cat","squirrel","rabbit","skunk",
-        "fox","rodent","deer"]
-

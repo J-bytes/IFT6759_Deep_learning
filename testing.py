@@ -10,48 +10,43 @@ import numpy as np
 import torchvision
 #-----local imports---------------------------------------
 from training.training import training
-from training.dataloaders.cct_dataloader import CustomImageDataset
-from multi_utils import set_parameter_requires_grad,Experiment,preprocess
-from main import metrics,criterion,vgg,alexnet,device
+from training.dataloaders.cct_dataloader_V2 import CustomImageDataset
+from custom_utils import preprocess,Experiment
+from main import metrics,criterion,device
 from training.training import validation_loop
 from tqdm import tqdm
 
-#TODO :
-# implementer F1 score et mAP
-# fix dataloader dans la branche du faster rcnn (classes retirées)
+num_classes=14
+batch_size=16
+# model = torchvision.models.resnext50_32x4d(pretrained=True)
+# model.fc = torch.nn.Linear(2048, num_classes)
+# model.load_state_dict(torch.load("models/models_weights/ResNet/v3/ResNet.pt"))
 
 
-test_list=np.loadtxt(f"data/test.txt")[1::].astype(int)
-data_path=f"data/images"
+test_dataset = CustomImageDataset("data/data/test_set3/test", transform=preprocess)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0,pin_memory=True) #keep
 
-vgg.load_state_dict(torch.load("models/models_weights/VGG_3.pt"))
-alexnet.load_state_dict(torch.load("models/models_weights/AlexNet_1.pt"))
-models=[vgg,alexnet]
-final_results={}
-for model in models :
-    model=model.to(device)
-    for location in test_list :
-        test_dataset = CustomImageDataset(data_path, locations=test_list, transform=preprocess)
-        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=50, shuffle=True, num_workers=0,  pin_memory=True)
-        val_loss, results=validation_loop(model,tqdm(test_loader),criterion,device)
-        metrics_results={}
-        for key in metrics :
-            metrics_results[key]=metrics[key](results[0].numpy(),results[1].numpy())
-        final_results[str(location)]=metrics_results
+running_loss,results=validation_loop(model=model,loader=test_loader,criterion=criterion,device=device)
+experiment=Experiment(f"{model._get_name()}/test")
+if experiment:
+    for key in metrics:
+        experiment.log_metric(key, metrics[key](results[1].numpy(), results[0].numpy()), epoch=0)
+        #wandb.log({key: metrics[key](results[1].numpy(), results[0].numpy())})
 
-import pandas as pd
-import matplotlib.pyplot as plt
-data=pd.DataFrame(final_results).T
-data.to_csv("test_results.csv")
+from sklearn.metrics import confusion_matrix
 
-plt.rcParams["figure.figsize"] = (20, 12)
-plt.rcParams["figure.dpi"] = 400
-fig,ax=plt.subplots()
-#data.T[location_list].T.sum()
-data.plot(kind="bar",ax=ax)
-plt.xticks(rotation=90)
-plt.xlabel("locations")
-plt.ylabel("metrics_results")
-plt.legend()
-plt.title("test set results per location")
-plt.savefig("test_set_results.png")
+def answer(v) :
+    v=v.numpy()
+    return np.where(np.max(v,axis=1)>0.5,np.argmax(v,axis=1),15)
+y_true,y_pred=answer(results[0]),answer(results[1])
+m=confusion_matrix(y_true, y_pred,normalize="pred").round(2)*100
+m=m.round(0)
+x = ['bobcat', 'opossum', 'car', 'coyote', 'raccoon', 'bird', 'dog', 'cat', 'squirrel', 'rabbit', 'skunk', 'fox', 'rodent', 'deer',"empty"]
+z_text = [[str(y) for y in x] for x in m]
+
+
+import plotly.figure_factory as ff
+fig = ff.create_annotated_heatmap(m, x=x, y=x, annotation_text=z_text, colorscale='Viridis')
+fig.update_layout(margin=dict(t=50, l=200))
+fig['data'][0]['showscale'] = True
+fig.show()

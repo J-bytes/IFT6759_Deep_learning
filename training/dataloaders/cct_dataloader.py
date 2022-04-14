@@ -30,7 +30,7 @@ class CustomImageDataset(Dataset):
             self.annotation_files[str(location)] = f"{self.img_dir}/{str(location)}/annotation.json"
             for file in annotation :
 
-                if annotation[file]["category"] not in ["bat","insect","mountain_lion","lizard","badger"] :
+                    #if annotation[file]["category"] not in ["bat","insect","mountain_lion","lizard","badger"] :
                     self.files.append(f"{self.img_dir}/{str(location)}/{file}")
                     self.length += 1
 
@@ -40,16 +40,16 @@ class CustomImageDataset(Dataset):
         data=json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
         i=0
         for category in data["categories"] :
-            if category["name"] not in ["empty","bat","insect","mountain_lion","lizard","badger"] :
-                self.categories[category["name"]]=id2number[int(category["id"])]
-                i+=1
+            #if category["name"] not in ["empty","bat","insect","mountain_lion","lizard","badger"] :
+            self.categories[category["name"]]=id2number[int(category["id"])]
+            i+=1
     def __len__(self):
         return self.length
 
     def label_transform(self,label): # encode one_hot
         if label=="empty" :
-            return torch.zeros((16))
-        one_hot= torch.zeros((16))
+            return torch.zeros((22))
+        one_hot= torch.zeros((22))
         one_hot[self.categories[label]]=1
         return one_hot.float()
 

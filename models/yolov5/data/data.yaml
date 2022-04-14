@@ -1,8 +1,0 @@
-train: C:\Users\cdetr\My Drive\master\Documents\UdeM\selim_project\dataset_yolo\train  # train images (relative to 'path') 128 images
-val: C:\Users\cdetr\My Drive\master\Documents\UdeM\selim_project\dataset_yolo\valid  # val images (relative to 'path') 128 images
-test:  C:\Users\cdetr\My Drive\master\Documents\UdeM\selim_project\dataset_yolo\test\images # test images (optional)
-
-nc: 17
-names: ["bobcat","opossum","car","coyote","raccoon","bird","dog","cat","squirrel","rabbit","skunk",
-        "fox","rodent","pig","deer","cow","empty"]
-
