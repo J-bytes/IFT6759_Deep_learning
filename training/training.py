@@ -56,6 +56,7 @@ def validation_loop(model,loader,criterion,device):
             inputs,labels=inputs.to(device),labels.to(device)
 
             # forward + backward + optimize
+
             outputs = model(inputs)
             results[1] = torch.cat((results[1], torch.nn.functional.softmax(outputs,dim=1).detach().cpu()),dim=0)
             loss = criterion(outputs, labels)
@@ -107,7 +108,7 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
         if val_loss<best_loss :
             best_loss=val_loss
             #save the model after XX iterations : TODO : adjust when to save weights
-            torch.save(model.state_dict(), f"models/models_weights/{model._get_name()}_{epoch}.pt")
+            experiment.save_weights(model)
             patience=patience_init
         else :
             patience-=1
