@@ -52,10 +52,10 @@ metrics = {
     "recall": recall,
 }
 
-folder="labels2/content/yolov5/runs/detect/exp5/labels"
+folder="labels3/content/yolov5/runs/detect/exp4/labels"
 
 mapping={}
-for file in os.listdir("data/data/test_set3/test/labels") :
+for file in os.listdir("data/data/data_split2/test/labels") :
     file_id=file.split("_")[0]
     mapping[file_id]=file
 
@@ -65,9 +65,9 @@ multicount=False
 for file in os.listdir(folder) :
 
     file_id=file.split("_")[0]
-    true_file=mapping.pop(file_id)
+    #true_file=mapping.pop(file_id)
 
-    true_label=np.loadtxt("data/data/test_set3/test/labels/"+true_file,unpack=True)
+    true_label=np.loadtxt("data/data/data_split2/test/labels/"+file_id+".txt",unpack=True)
     a=(len(true_label.flatten())+1)//5
     true_label=true_label.reshape(a,5)
     label = np.loadtxt(folder + "/" + file, unpack=True)

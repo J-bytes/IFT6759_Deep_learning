@@ -1,1 +1,7 @@
 tensorboard
+imageio
+opencv-python
+#torch
+numpy
+pandas
+tqdm
