@@ -18,6 +18,40 @@
 import os
 import numpy as np
 from sklearn.metrics import confusion_matrix
+num_classes=15
+# ------------defining metrics--------------------------------------------
+import sklearn
+from sklearn.metrics import top_k_accuracy_score
+
+
+
+def macro(true, pred):
+
+
+    return sklearn.metrics.f1_score(true, pred, average='macro')  # weighted??
+
+
+def f1(true, pred):
+
+    return sklearn.metrics.f1_score(true, pred, average='weighted')  # weighted??
+
+
+def precision(true, pred):
+
+    return sklearn.metrics.precision_score(true, pred, average='macro')
+
+
+def recall(true, pred):
+    return sklearn.metrics.recall_score(true, pred, average='macro')
+
+
+metrics = {
+    "f1": f1,
+    "macro": macro,
+    "precision": precision,
+    "recall": recall,
+}
+
 folder="labels2/content/yolov5/runs/detect/exp5/labels"
 
 mapping={}
@@ -58,10 +92,10 @@ for file in os.listdir(folder) :
             count-=1
 
         while count>0 :
-            results[1].append(14) # le modele ne trouvait rien et predisait donc la classe nulle
+            results[1].append(15) # le modele ne trouvait rien et predisait donc la classe nulle
             count-=1
         while count<0 :#le modele a predit des classes d'extra
-            results[0].append(14)
+            results[0].append(15)
             count+=1
 
     else :
@@ -70,29 +104,41 @@ for file in os.listdir(folder) :
 
 for key in mapping.keys() :
     file=mapping[key]
-    pred=14
+    pred=15
     try :
         label = np.loadtxt(folder + "/" + file, unpack=True).flatten()[0]
     except :
-        label=14
+        label=15
     results[0].append(pred)
     results[1].append(label)
 def answer(v) :
     v=np.array(v,dtype=int)
     return v
 y_true,y_pred=answer(results[0]),answer(results[1])
-a=np.where(y_true==14,0,1)
-b=np.where(y_pred==14,0,1)
-print("identification results :",np.mean(np.where(a==b,1,0)))
-m=confusion_matrix(y_true, y_pred,normalize="pred").round(2)*100
-m=m.round(0)
-x = ['bobcat', 'opossum', 'car', 'coyote', 'raccoon', 'bird', 'dog', 'cat', 'squirrel', 'rabbit', 'skunk', 'fox', 'rodent', 'deer',"empty"]
-z_text = [[str(y) for y in x] for x in m]
 
+
+for metric in metrics.keys() :
+    print(metric+" : ",metrics[metric](y_true,y_pred))
+
+a=np.where(y_true==15,0,1)
+b=np.where(y_pred==15,0,1)
+print("identification results :",np.mean(np.where(a==b,1,0)))
+m2=confusion_matrix(y_true, y_pred,normalize="pred").round(2)
+
+print("avg class : ",np.mean(np.diag(m2)))
+x = ['bobcat', 'opossum', 'car', 'coyote', 'raccoon', 'bird', 'dog', 'cat', 'squirrel', 'rabbit', 'skunk', 'fox', 'rodent', 'deer',"empty"]
+z_text = [[str(y) for y in x] for x in m2]
 
 
 import plotly.figure_factory as ff
-fig = ff.create_annotated_heatmap(m, x=x, y=x, annotation_text=z_text, colorscale='Viridis')
-fig.update_layout(margin=dict(t=50, l=200))
+fig = ff.create_annotated_heatmap(m2, x=x, y=x, annotation_text=z_text, colorscale='Viridis')
+fig.update_layout(
+    margin=dict(t=50, l=200),
+    #title="Yolo 3.0",
+    xaxis_title="True labels",
+    yaxis_title="Predictions",
+
+)
+
 fig['data'][0]['showscale'] = True
 fig.show()

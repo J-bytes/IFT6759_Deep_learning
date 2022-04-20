@@ -4,7 +4,7 @@ import tqdm
 import numpy as np
 import wandb
 
-
+import torch.cuda.amp as amp
 # training loop
 
 def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
@@ -24,10 +24,12 @@ def training_loop(model,loader,optimizer,criterion,device,verbose,epoch) :
             param.grad = None
 
         # forward + backward + optimize
+        with amp.autocast() :
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
 
-        outputs = model(inputs)
         results[1] = torch.cat((results[1], torch.nn.functional.softmax(outputs,dim=1).detach().cpu()),dim=0)
-        loss = criterion(outputs, labels)
+
         loss.backward()
         optimizer.step()
         running_loss+=loss.detach()/batch_size
@@ -56,10 +58,11 @@ def validation_loop(model,loader,criterion,device):
             inputs,labels=inputs.to(device),labels.to(device)
 
             # forward + backward + optimize
-
-            outputs = model(inputs)
+            with amp.autocast() :
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
             results[1] = torch.cat((results[1], torch.nn.functional.softmax(outputs,dim=1).detach().cpu()),dim=0)
-            loss = criterion(outputs, labels)
+
             running_loss+=loss.detach()/batch_size
 
 
@@ -81,12 +84,13 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
     best_loss=np.inf
     wandb.watch(model, log_freq=batch_size)
     patience_init=patience
+    pbar = tqdm.tqdm(total=epoch_max)
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
 
         if not verbose:
-            train_loss,results = training_loop(model, tqdm.tqdm(training_loader), optimizer, criterion, device, verbose,
+            train_loss,results = training_loop(model, tqdm.tqdm(training_loader, leave=False), optimizer, criterion, device, verbose,
                                                         epoch)
-            val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader), criterion, device
+            val_loss, results = validation_loop(model, tqdm.tqdm(validation_loader, leave=False), criterion, device
                                                         )
 
         else :
@@ -115,4 +119,5 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
             print("patience has been reduced by 1")
         #Finishing the loop
         epoch+=1
+        pbar.update(1)
     print('Finished Training')

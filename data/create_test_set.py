@@ -38,8 +38,10 @@ new_data_dir="data/test_set3/test"
 # format data better cuz they did a shit job
 
 annotations = {}
-for file in data["annotations"]:
-    annotations[file["image_id"]] = file
+
+for file2 in data["images"] :
+
+    annotations[file2["id"]] = file2
 
 categories = {}
 for item in data["categories"]:
@@ -140,22 +142,29 @@ def part2() :
 
 #part2()
 
-
+plt.rcParams["figure.figsize"] = (20, 12)
+plt.rcParams["figure.dpi"] = 400
+locations_test={}
 def part3() : # lets plot a histogram to confirm everything is A-ok
     data={}
     for file in os.listdir(new_data_dir + "/images"):
 
         file_id=file.split("_")[0]
-        data[categories[annotations[file_id]["category_id"]]]=data.get(categories[annotations[file_id]["category_id"]],0)+1
+        #data[categories[annotations[file_id]["category_id"]]]=data.get(categories[annotations[file_id]["category_id"]],0)+1
+        locations_test[annotations[file_id]["location"]] = locations_test.get(
+            annotations[file_id]["location"], 0) + 1
 
-    data = pd.DataFrame(data.items(),index=data.keys())
-    data.plot(kind="bar")
-    plt.xticks()
-    plt.xlabel("Classes")  # , fontsize = 60)
-    plt.ylabel("Count")  # , fontsize = 60)
-    plt.legend()  # prop={'size':45})
-    # plt.title("Distribution of classes in the differents datasets", fontsize = 30)
-    plt.savefig("histogram_test_set.png")
+    # data = pd.DataFrame(data.items(),index=data.keys())
+    # data.plot(kind="bar",color="red",legend=None)
+    # plt.xticks()
+    # plt.xlabel("Classes")  # , fontsize = 60)
+    # plt.ylabel("Count")  # , fontsize = 60)
+    # #plt.legend()  # prop={'size':45})
+    # plt.xticks(rotation=45, fontsize=25)
+    # #plt.title("Distribution of classes in the unseen test set", fontsize = 30)
+    # plt.savefig("histogram_test_set.png")
 
-part2()
+    print(len(locations_test.keys()))
+
+#part2()
 part3()
