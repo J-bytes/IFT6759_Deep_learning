@@ -5,3 +5,9 @@ opencv-python
 numpy
 pandas
 tqdm
+imageio
+opencv-python
+#torch
+numpy
+pandas
+tqdm

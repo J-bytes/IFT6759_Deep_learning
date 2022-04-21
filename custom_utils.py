@@ -2,6 +2,9 @@ from torchvision import transforms
 import os
 import torch
 import pathlib
+import sklearn
+import numpy as np
+from  sklearn.metrics import top_k_accuracy_score
 class Experiment() :
     def __init__(self,directory):
         self.directory="log/"+directory
@@ -48,3 +51,49 @@ def collate_fn(batch):
     """
     return tuple(zip(*batch))
 
+
+num_classes = 14
+
+
+def top1(true, pred):
+    true = np.argmax(true, axis=1)
+    # labels=np.unique(true)
+    labels = np.arange(0, num_classes)
+
+    return top_k_accuracy_score(true, pred, k=1, labels=labels)
+
+
+def top5(true, pred):
+    true = np.argmax(true, axis=1)
+    labels = np.arange(0, num_classes)
+
+    return top_k_accuracy_score(true, pred, k=5, labels=labels)
+
+
+def f1(true, pred):
+    true = np.argmax(true, axis=1)
+    pred = np.argmax(pred, axis=1)
+
+    return sklearn.metrics.f1_score(true, pred, average='macro')  # weighted??
+
+
+def precision(true, pred):
+    true = np.argmax(true, axis=1)
+    pred = np.argmax(pred, axis=1)
+    return sklearn.metrics.precision_score(true, pred, average='macro')
+
+
+def recall(true, pred):
+    true = np.argmax(true, axis=1)
+    pred = np.argmax(pred, axis=1)
+    return sklearn.metrics.recall_score(true, pred, average='macro')
+
+
+metrics = {
+    "f1": f1,
+
+    "precision": precision,
+    "recall": recall,
+    "top-1": top1,
+    "top-5": top5
+}

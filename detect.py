@@ -1,19 +1,25 @@
 # ------python import------------------------------------
 import argparse
+import time
+import warnings
+import numpy as np
+import torch
+import tqdm
+from custom_utils import preprocess, Experiment
+import sklearn
+from sklearn.metrics import confusion_matrix
 
-# -----local imports---------------------------------------
-
-# ----------- parse arguments----------------------------------
-
+from training.training import validation_loop
+from training.dataloaders.cct_dataloader_V2 import CustomImageDataset
 def init_argparse() :
     parser = argparse.ArgumentParser(description='Launch testing for a specific model')
 
     parser.add_argument("-t",'--testset',
-                        default=1,
+                        default="unseen",
 
-                        type=int,
+                        type=str,
 
-                        choices=[1, 2],
+                        choices=["seen", "unseen"],
                         required=True,
                         help='Choice of the test set 1-seen locations 2-unseen locations')
 
@@ -39,37 +45,34 @@ def init_argparse() :
     return parser
 
 def main() :
-    import argparse
-    import time
+    #-----------defining metrics - -------------------------------------------
 
-    import numpy as np
-    import torch
 
-    from custom_utils import preprocess, Experiment
-    from train import metrics, criterion, device
-    from training.training import validation_loop
+    criterion = torch.nn.CrossEntropyLoss()
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
+        warnings.warn("No gpu is available for the computation")
+
+
+
 
 
     parser=init_argparse()
-    #args, unknown = parser.parse_known_args()
+
     args=parser.parse_args()
-    args.testset=2
+    num_classes=14
 
-    if int(args.testset) > 1:
-        num_classes = 14
-        from training.dataloaders.cct_dataloader_V2 import CustomImageDataset
-
-        test_dataset = CustomImageDataset(f"data/data/data_split{args.testset}/train", transform=preprocess)
+    if args.testset =="seen":
 
 
+        test_dataset = CustomImageDataset(f"data/data/data_split{args.dataset}/test", transform=preprocess)
 
-    else:
-        num_classes = 19
-        from training.dataloaders.cct_dataloader import CustomImageDataset
+    if args.testset=="unseen" :
+        test_dataset = CustomImageDataset(f"data/data/test_set3/test", transform=preprocess)
 
-        test_list = np.loadtxt(f"data/test.txt")[1::].astype(int)
 
-        test_dataset = CustomImageDataset("data/data/data_split1", locations=test_list, transform=preprocess)
 
     model = torch.hub.load('pytorch/vision:v0.10.0', args.model, pretrained=True)
     if args.model in ["vgg19", "alexnet"]:
@@ -83,20 +86,20 @@ def main() :
         torch.load(f"models/models_weights/{model._get_name()}/v{args.dataset}/{model._get_name()}.pt"))
     model = model.to(device)
 
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0,
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=8,
                                               pin_memory=True)  # keep
 
     a = time.time()
-    running_loss, results = validation_loop(model=model, loader=test_loader, criterion=criterion, device=device)
-    print((time.time() - a) / len(test_dataset))
+    running_loss, results = validation_loop(model=model, loader=tqdm.tqdm(test_loader), criterion=criterion, device=device)
+    print("time :" ,(time.time() - a) / len(test_dataset))
     experiment = Experiment(f"{model._get_name()}/test")
-
+    from custom_utils import metrics #had to reimport due to bug
     if experiment:
         for key in metrics:
             experiment.log_metric(key, metrics[key](results[1].numpy(), results[0].numpy()), epoch=0)
             # wandb.log({key: metrics[key](results[1].numpy(), results[0].numpy())})
 
-    from sklearn.metrics import confusion_matrix
+
 
 
     def answer(v):
@@ -107,7 +110,6 @@ def main() :
     y_true, y_pred = answer(results[0]), answer(results[1])
 
     # ------------defining metrics--------------------------------------------
-    import sklearn
 
 
     def macro(true, pred):
