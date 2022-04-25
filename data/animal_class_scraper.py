@@ -13,8 +13,8 @@ class AnimalsClassScraper:
     def __init__(
         self,
     ):
-        self.dataset_path=r"data/data_split2/"
-        self.dataset_name="train/"
+        self.dataset_path=r"data/data_split2/train/"
+
         #self.to_collect_label_name = ["bird", "squirrel", "rodent"]
 
 
@@ -24,7 +24,7 @@ class AnimalsClassScraper:
     def augment(self,classes= [5, 8, 12]):
         """
         Proceed to replace the image only with the ROI, now upsized to the full image size
-        :param classes: The classes we want to augment
+        :param classes: The id of the classes we want to augment as integers
         :return: Nothing.
         """
 
@@ -38,7 +38,7 @@ class AnimalsClassScraper:
 
     
 
-        for root, dirs, files in os.walk(self.dataset_path, topdown=False):
+        for root, dirs, files in os.walk(self.dataset_path+"labels", topdown=False):
             for file in files:
                 location_file = os.path.join(root, file)
                 with open(location_file) as f:
@@ -50,9 +50,9 @@ class AnimalsClassScraper:
                     bbox = line.split()[1::]  # !!!
                     if int(label_id) in self.to_collect_label_id:
 
-                        image_name = location_file[-40:-3] + "jpg"
+                        image_name = file[:-3] + "jpg"
                         image_path = os.path.join(
-                            self.dataset_path, image_name
+                            self.dataset_path,"images/", image_name
                         )
                         if os.path.exists(image_path):
 
@@ -68,7 +68,6 @@ class AnimalsClassScraper:
                             new_image_data=cv.resize(ROI,(n,n))
                             cv.imwrite(
                                 self.dataset_path
-                                + self.dataset_name
                                 + "images/"
                                 + image_name,
                                 new_image_data,
@@ -98,9 +97,9 @@ class AnimalsClassScraper:
 
     def remove(self,classes):
         """
-
-        :param classes:
-        :return:
+        This function removes specific classes from the current dataset
+        :param classes: list of the classes id we want to see upsampled as integers
+        :return: Nothing
         """
 
         self.to_collect_label_id = classes
@@ -111,7 +110,7 @@ class AnimalsClassScraper:
         deleted_images = []
         no_image = []
 
-        for root, dirs, files in os.walk(self.dataset_path, topdown=False):
+        for root, dirs, files in os.walk(self.dataset_path+"labels", topdown=False):
             for file in files:
                 location_file = os.path.join(root, file)
                 with open(location_file) as f:
@@ -119,7 +118,7 @@ class AnimalsClassScraper:
 
                 if int(label_id) in self.to_collect_label_id:
 
-                    image_name = location_file[-40:-3] + "jpg"
+                    image_name = file[:-3] + "jpg"
                     image_path = os.path.join(
                         self.dataset_path, image_name
                     )
@@ -145,6 +144,66 @@ class AnimalsClassScraper:
             f.write(json.dumps(deleted_images_path))
         with open(self.log_dir + "/no_images_path.txt", "w") as f:
             f.write(json.dumps(no_image))
+
+
+    def upsample(self, classes,n_times):
+        """
+
+        :param self:
+        :param classes: list of classes we want to see upsampled
+        :param n_times:  Numbers of copy to make
+        :return:  Nothing
+        """
+
+        self.to_collect_label_id = classes
+        count = 0
+        count_weird = 0
+
+        deleted_images_path = []
+        deleted_images = []
+        no_image = []
+
+        for root, dirs, files in os.walk(self.dataset_path+"labels", topdown=False):
+            for file in files:
+                location_file = os.path.join(root, file)
+                with open(location_file) as f:
+                    lines = f.readlines()
+                    f.close()
+
+                for line in lines:
+                    label_id = line.split()[0]
+                    bbox = line.split()[1::]  # !!!
+                    if int(label_id) in self.to_collect_label_id:
+
+                        image_name = file[:-3] + "jpg"
+                        image_path = os.path.join(
+                            self.dataset_path, image_name
+                        )
+                        if os.path.exists(image_path):
+
+
+
+                            deleted_images.append(image_name)
+                            deleted_images_path.append(image_path)
+                            shutil.copy(image_path,self.dataset_path)
+
+                            count += 1
+
+                        else:
+                            print(location_file, image_name)
+                            no_image.append(image_name)
+                            count_weird += 1
+
+        print(count, "files haved been augmented. \n",
+              count_weird, " labels with no images")
+
+        with open(self.log_dir + "/deleted_images.txt", "w") as f:
+            f.write(json.dumps(deleted_images))
+        with open(self.log_dir + "/deleted_images_path.txt", "w") as f:
+            f.write(json.dumps(deleted_images_path))
+        with open(self.log_dir + "/no_images_path.txt", "w") as f:
+            f.write(json.dumps(no_image))
+
 
 def main():
     scraper = AnimalsClassScraper()
