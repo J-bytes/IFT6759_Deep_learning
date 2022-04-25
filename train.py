@@ -61,6 +61,7 @@ def init_parser() :
 def main() :
     parser=init_parser()
     args = parser.parse_args()
+
     prepro=preprocessing(img_size=args.img_size)
     preprocess=prepro.preprocessing()
     version = args.dataset

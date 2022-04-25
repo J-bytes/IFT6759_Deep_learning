@@ -31,12 +31,11 @@ sudo apt install zip
 Download the data :
 
 ```
-wget https://drive.google.com/file/d/1QwctLmiog76GoVdyNfo2BMqfFm9gFvqQ/view?usp=sharing
-wget https://drive.google.com/file/d/1YXlG77XbMA0a4d12qcUSLa9sMp4rk6Nx/view?usp=sharing
-unzip data_split2.zip
-unzip unseen_test_set.zip
+python setup.py
 ```
 then run :
+(CAREFUL!!! you cann only go UP in the dataset version, as it will modify the current dataset.
+You will be force to download the training set again if you want to go back.)
 ```
 python train.py --dataset {choice of dataset [2,3,4] --model {model name}]}
 ```
@@ -48,6 +47,6 @@ python train.py -h
 for more explanation on the parameter of this function.
 
 
-#How to test your model?
+# How to test your model?
 
 

@@ -44,7 +44,7 @@ def init_argparse() :
     return parser
 
 def main() :
-    #-----------defining metrics - -------------------------------------------
+
 
 
     criterion = torch.nn.CrossEntropyLoss()
@@ -55,24 +55,20 @@ def main() :
         warnings.warn("No gpu is available for the computation")
 
 
-
-
-
+    #----- parsing arguments --------------------------------------
     parser=init_argparse()
-
     args=parser.parse_args()
     num_classes=14
 
+
+    #------loading test set --------------------------------------
     if args.testset =="seen":
-
-
         test_dataset = CustomImageDataset(f"data/data/data_split{args.dataset}/test", transform=preprocess)
-
     if args.testset=="unseen" :
         test_dataset = CustomImageDataset(f"data/data/test_set3/test", transform=preprocess)
 
 
-
+    #----------------loading model -------------------------------
     model = torch.hub.load('pytorch/vision:v0.10.0', args.model, pretrained=True)
     if args.model in ["vgg19", "alexnet"]:
         model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, num_classes, bias=True)
@@ -87,6 +83,14 @@ def main() :
 
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=8,
                                               pin_memory=True)  # keep
+
+
+
+
+
+
+
+
 
     a = time.time()
     running_loss, results = validation_loop(model=model, loader=tqdm.tqdm(test_loader), criterion=criterion, device=device)
