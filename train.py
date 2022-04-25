@@ -1,18 +1,13 @@
 #------python import------------------------------------
 import warnings
 import torch
-import tqdm
-import copy
-#from comet_ml import Experiment
-
+import wandb
 import os
-import numpy as np
-import torchvision
 import argparse
 #-----local imports---------------------------------------
 from training.training import training
-
-from custom_utils import set_parameter_requires_grad,Experiment,preprocess,metrics
+from training.dataloaders.cct_dataloader import CustomImageDataset
+from custom_utils import set_parameter_requires_grad,Experiment,preprocessing,metrics
 
 
 
@@ -44,69 +39,37 @@ def init_parser() :
                         choices=['1', '2', '3',"4"],
                         required=True,
                         help='Version of the dataset')
+    parser.add_argument('--img_size',
+                        default=320,
+                        const='all',
+                        type=int,
+                        nargs='?',
+                        required=False,
+                        help='width and length to resize the images to. Choose a value between 320 and 608.')
+
+    parser.add_argument('--wandb',
+                        default=False,
+                        const='all',
+                        type=bool,
+                        nargs='?',
+                        choices=[True,False],
+                        required=False,
+                        help='True or False, do you wish (and did you setup) wandb? You will need to add the project name in the initialization of wandb in train.py')
 
     return parser
 
 def main() :
     parser=init_parser()
     args = parser.parse_args()
-
+    prepro=preprocessing(img_size=args.img_size)
+    preprocess=prepro.preprocessing()
     version = args.dataset
-    if int(version)>1 :
-        num_classes=14
-        from training.dataloaders.cct_dataloader_V2 import CustomImageDataset
-        train_dataset = CustomImageDataset(f"data/data/data_split{version}/train", transform=preprocess)
-        val_dataset = CustomImageDataset(f"data/data/data_split{version}/valid", transform=preprocess)
 
+    num_classes=14
 
-    # else :
-    #     num_classes = 19
-    #     from training.dataloaders.cct_dataloader import CustomImageDataset
-    #     train_list = np.loadtxt(f"data/training.txt")[1::].astype(int)
-    #     val_list = np.loadtxt(f"data/validation.txt")[1::].astype(int)
-    #     train_dataset = CustomImageDataset("data/data/images",locations=train_list, transform=preprocess)
-    #     val_dataset = CustomImageDataset("data/data/images",locations=val_list, transform=preprocess)
-    #-----------defining metrics - -------------------------------------------
-    # import sklearn
-    # from sklearn.metrics import top_k_accuracy_score
-    #
-    # def top1(true, pred):
-    #     true = np.argmax(true, axis=1)
-    #     # labels=np.unique(true)
-    #     labels = np.arange(0, num_classes)
-    #
-    #     return top_k_accuracy_score(true, pred, k=1, labels=labels)
-    #
-    # def top5(true, pred):
-    #     true = np.argmax(true, axis=1)
-    #     labels = np.arange(0, num_classes)
-    #
-    #     return top_k_accuracy_score(true, pred, k=5, labels=labels)
-    #
-    # def f1(true, pred):
-    #     true = np.argmax(true, axis=1)
-    #     pred = np.argmax(pred, axis=1)
-    #
-    #     return sklearn.metrics.f1_score(true, pred, average='macro')  # weighted??
-    #
-    # def precision(true, pred):
-    #     true = np.argmax(true, axis=1)
-    #     pred = np.argmax(pred, axis=1)
-    #     return sklearn.metrics.precision_score(true, pred, average='macro')
-    #
-    # def recall(true, pred):
-    #     true = np.argmax(true, axis=1)
-    #     pred = np.argmax(pred, axis=1)
-    #     return sklearn.metrics.recall_score(true, pred, average='macro')
-    #
-    # metrics = {
-    #     "f1": f1,
-    #
-    #     "precision": precision,
-    #     "recall": recall,
-    #     "top-1": top1,
-    #     "top-5": top5
-    # }
+    train_dataset = CustomImageDataset(f"data/data/data_split{version}/train", transform=preprocess)
+    val_dataset = CustomImageDataset(f"data/data/data_split{version}/valid", transform=preprocess)
+
     criterion = torch.nn.CrossEntropyLoss()
 
     # -----------model initialisation------------------------------
@@ -150,9 +113,15 @@ def main() :
 
 
 
-
+    #send model to gpu
     model = model.to(device)
-    experiment = Experiment(f"{model._get_name()}/v{version}")
+
+    #initialize metrics loggers
+    if args.wandb :
+        wandb.init(project='mila-prof-master-gang', tags=[args.model,args.version])
+        wandb.watch(model)
+
+    experiment = Experiment(f"{model._get_name()}/v{version}",wandb=args.wandb)
 
     optimizer = torch.optim.AdamW(model.parameters())
 

@@ -11,70 +11,68 @@ import cv2 as cv
 from PIL import Image
 import re
 
-id2number={6:0,1:1,33:2,9:3,3:4,11:5,8:6,16:7,5:8,10:9,7:10,51:11,99:12,39:13,34:14,37:15,30:16,14:17,21:18,40:19,66:20,97:21}
-
 
 class CustomImageDataset(Dataset):
-    def __init__(self, img_dir, locations, transform=None):
-        self.largeur = 320
-        self.hauteur = 320
-        self.locations=locations # feed only select locations
+    """
+    This is the dataloader for our classification models. It returns the image an the corresponding class.
+    """
+    def __init__(self, img_dir, transform=None):
+
         self.img_dir = img_dir
         self.transform = transform
         self.length=0
         self.files=[]
         self.annotation_files={}
 
-        for location in locations :
-            annotation=json.load(open(f"{self.img_dir}/{str(location)}/annotation.json"))
-            self.annotation_files[str(location)] = f"{self.img_dir}/{str(location)}/annotation.json"
-            for file in annotation :
 
-                    #if annotation[file]["category"] not in ["bat","insect","mountain_lion","lizard","badger"] :
-                    self.files.append(f"{self.img_dir}/{str(location)}/{file}")
-                    self.length += 1
+        for file in os.listdir(img_dir+"/images") :
+            try :
+                category_id,new_x,new_y,new_width,new_height=np.loadtxt(f"{self.img_dir}/labels/{file[:-3]}txt",unpack=True)
+            except :
+                category_id=14 # the image is empty
+                new_x, new_y, new_width, new_height=0,0,0,0
+
+            category_id=np.array([category_id])[0]
+            try :
+                category_id=category_id[0]
+            except :
+                pass
+            if int(category_id) not in [20,21,19,17,18] :
+                self.files.append(f"{self.img_dir}/images/{file}")
 
 
-        self.categories={}
-
-        data=json.load(open(f"{os.getcwd()}/data_API/caltech_bboxes_20200316.json"))
-        i=0
-        for category in data["categories"] :
-            #if category["name"] not in ["empty","bat","insect","mountain_lion","lizard","badger"] :
-            self.categories[category["name"]]=id2number[int(category["id"])]
-            i+=1
     def __len__(self):
-        return self.length
+        return len(self.files)
 
-    def label_transform(self,label): # encode one_hot
-        if label=="empty" :
-            return torch.zeros((22))
-        one_hot= torch.zeros((22))
-        one_hot[self.categories[label]]=1
+    def label_transform(self,label_id): # encode one_hot
+        if int(label_id)==14 :
+            return torch.zeros((14))
+        one_hot= torch.zeros((14))
+        one_hot[int(label_id)]=1
         return one_hot.float()
 
     def __getitem__(self, idx):
         img_path=self.files[idx]
 
         patterns=img_path.split("/")[::-1]
-        location = patterns[1]
+
         keyname = patterns[0]
 
-        annotations=json.load(open(self.annotation_files[location]))
+        label_file=f"{self.img_dir}/labels/{keyname[:-3]}txt"
+        if os.path.exists(label_file) :
+            with open(label_file) as f:
+                category_id = f.readlines()[0].split()[0]
+        else :
+            category_id = 14  # the image is empty
+
+
+
         image = cv.imread(img_path)
-        image = cv.resize(image, (self.hauteur, self.largeur))
-
-
-
-
         if self.transform:
             image=Image.fromarray(np.uint8(image))
             image = self.transform(image)
 
+        label=self.label_transform(category_id)
 
-
-
-        img_ann = annotations[keyname]
-        label=self.label_transform(img_ann["category"])
 
         return image.float(), label

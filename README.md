@@ -9,46 +9,45 @@ This repo is for the project of animal classification using deep learning.
 
 Project Gantt chart: https://docs.google.com/spreadsheets/d/1dAW6vDA6k7e2ML3V-6WNNC8MwGt3SMAw1tNjU0YOjMg/edit?usp=sharing
 
-# Description du projet
+# Project Description
 
-Notre projet se basera sur la classification d’animaux à l’aide de modèles pré-entraînés. Le but sera d'entraîner le modèle avec un nombre limité d’entrées afin de tester la capacité du modèle de s’adapter à des photos prises dans d’autres environnements. Pour ce faire, nous utiliserons VGG19, yoloV5, InceptionV4, et/ou faster R-CNN.
+Using the Caltech Camera trap dataset
+https://lila.science/datasets/caltech-camera-traps
 
-Ces modèles seront ré-entrainé avec un subset des données (environ 15%) . Le but sera alors de porter ce modèle, entrainé sur seulement quelques localisations, vers les autres.
-Nous essayerons également d’utiliser quelques techniques afin d’aider notre modèle à généraliser, dont lla technique de domain adaptation. 
+we trained various models (VGG19, AlexNet, ResNext50, EfficientDet2, Yolo v5)
+to perform either classification or detection.
+
+# How to train?
+
+Enter you python environment. If you have a venv :
+```
+source venv/bin/activate
+```
+Install the prerequisite
+```
+python -m pip install -r requirements.txt
+sudo apt install zip
+```
+Download the data :
+
+```
+wget https://drive.google.com/file/d/1QwctLmiog76GoVdyNfo2BMqfFm9gFvqQ/view?usp=sharing
+wget https://drive.google.com/file/d/1YXlG77XbMA0a4d12qcUSLa9sMp4rk6Nx/view?usp=sharing
+unzip data_split2.zip
+unzip unseen_test_set.zip
+```
+then run :
+```
+python train.py --dataset {choice of dataset [2,3,4] --model {model name}]}
+```
+
+you can call 
+```
+python train.py -h
+```
+for more explanation on the parameter of this function.
 
 
-# Étapes importantes
-
-## Milestone 1 (25 février): Revue de littérature , avoir trouvé une architecture de réseau à développer ET trouver un modèle pré-existant pour comparer nos futurs résultats
-
-## Milestone 2 (4 mars): Prétraitement des données, avoir un “dataloader”/dataset prêt.
+#How to test your model?
 
 
-## Milestone 3 (11 mars) : Résultats préliminaire
-
-## Milestone 4 (16 mars) : Amélioration des modèles
-
-## Milestone 5 (18 mars) : Résultats préliminaires (2 pager)
-
-## Milestone 6(23 mars) : Résultats finaux modèle classification
-
-## Milestone 7 (1er avril) : Résultats finaux modèle
-
-
-## Milestone 8(13 avril) : présentation en classe
-
-## Milestone 9: Écriture du rapport
-
-## Milestone 10 : 29 avril : Rapport final
-
-
-
-
-
-# Distribution des tâches
-
-Nous utiliserons principalement la méthode de gestion Kanban implémentée avec github project pour la gestion de la distribution du travail.
-
-Pour permettre ce type de travail décentralisé, comet.ml sera également utilisé afin de permettre d’enregistrer nos expérience effectué sur nos différents modèles lors de l'entraînement, permettant à tous les membres d’avoir accès aux résultats.
-
-De plus, il fut décidé qu’une rencontre bi-hebdomadaire, les mercredi et vendredi, serait organisée afin de travailler sur le projet en équipe pour donner l’opportunité à chaque membre de travailler et réviser chacune des étapes du projet.

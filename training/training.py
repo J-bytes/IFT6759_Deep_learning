@@ -2,9 +2,19 @@
 import torch
 import tqdm
 import numpy as np
-import wandb
+
 
 def training_loop(model,loader,optimizer,criterion,device,minibatch_accumulate) :
+    """
+
+    :param model: model to train
+    :param loader: training dataloader
+    :param optimizer: optimizer
+    :param criterion: criterion for the loss
+    :param device: device to do the computations on
+    :param minibatch_accumulate: number of minibatch to accumulate before applying gradient. Can be useful on smaller gpu memory
+    :return: epoch loss, tensor of concatenated labels and predictions
+    """
     running_loss=0
 
     results=[torch.tensor([]),torch.tensor([])]
@@ -42,6 +52,14 @@ def training_loop(model,loader,optimizer,criterion,device,minibatch_accumulate) 
 
 @torch.no_grad()
 def validation_loop(model,loader,criterion,device):
+    """
+
+    :param model: model to evaluate
+    :param loader: dataset loader
+    :param criterion: criterion to evaluate the loss
+    :param device: device to do the computation on
+    :return: val_loss for the N epoch, tensor of concatenated labels and predictions
+    """
     running_loss=0
 
     model.eval()
@@ -69,12 +87,12 @@ def validation_loop(model,loader,criterion,device):
     return running_loss,results
 
 def training(model,optimizer,criterion,training_loader,validation_loader,device="cpu",metrics=None,minibatch_accumulate=1,experiment=None,patience=5,epoch_max=50, batch_size=1) :
-    wandb.init(project='mila-prof-master-gang', tags=[model._get_name()])
+
     epoch=0
     train_loss_list=[]
     val_loss_list=[]
     best_loss=np.inf
-    wandb.watch(model, log_freq=batch_size)
+
     patience_init=patience
     pbar = tqdm.tqdm(total=epoch_max)
     while patience>0 and epoch<epoch_max:  # loop over the dataset multiple times
@@ -90,12 +108,10 @@ def training(model,optimizer,criterion,training_loader,validation_loader,device=
         if experiment :
             experiment.log_metric("training_loss",train_loss.tolist(),epoch=epoch)
             experiment.log_metric("validation_loss", val_loss.tolist(),epoch=epoch)
-            wandb.log({"train_loss": train_loss,
-                       "val_loss": val_loss})
 
             for key in metrics :
                 experiment.log_metric(key,metrics[key](results[1].numpy(),results[0].numpy()),epoch=epoch)
-                wandb.log({key : metrics[key](results[1].numpy(),results[0].numpy())})
+
         if val_loss<best_loss :
             best_loss=val_loss
 

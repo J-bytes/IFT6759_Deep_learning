@@ -10,10 +10,8 @@ class AnimalsClassScraper:
     specific classes (classes that are not as well classified or detected as others,etc)
     """
 
-    def __init__(
-        self,
-    ):
-        self.dataset_path=r"data/data_split2/train/"
+    def __init__(self,dataset_path=r"data/data_split2/train/" ):
+        self.dataset_path=dataset_path
 
         #self.to_collect_label_name = ["bird", "squirrel", "rodent"]
 
@@ -38,7 +36,7 @@ class AnimalsClassScraper:
 
     
 
-        for root, dirs, files in os.walk(self.dataset_path+"labels", topdown=False):
+        for root, dirs, files in os.walk(self.dataset_path+"labels/", topdown=False):
             for file in files:
                 location_file = os.path.join(root, file)
                 with open(location_file) as f:
@@ -51,9 +49,7 @@ class AnimalsClassScraper:
                     if int(label_id) in self.to_collect_label_id:
 
                         image_name = file[:-3] + "jpg"
-                        image_path = os.path.join(
-                            self.dataset_path,"images/", image_name
-                        )
+                        image_path = os.path.join(self.dataset_path, "images/"+image_name)
                         if os.path.exists(image_path):
 
                             image_data = cv.imread(image_path)
@@ -61,22 +57,14 @@ class AnimalsClassScraper:
                             x,y,w,h=bbox
                             x,y,w,h=float(x),float(y),float(w),float(h)
                             x1=int(n*(x-w/2))
-                            y1=int(n*(y-w/2))
+                            y1=int(n*(y-h/2))
                             x2=int(n*(x+w/2))
-                            y2=int(n*(y+w/2))
+                            y2=int(n*(y+h/2))
                             ROI = image_data[y1:y2,x1:x2]
                             new_image_data=cv.resize(ROI,(n,n))
-                            cv.imwrite(
-                                self.dataset_path
-                                + "images/"
-                                + image_name,
-                                new_image_data,
-                            )
-
+                            cv.imwrite(image_path,new_image_data)
                             deleted_images.append(image_name)
                             deleted_images_path.append(image_path)
-                            os.remove(image_path)
-
                             count+= 1
 
                         else:
@@ -110,7 +98,7 @@ class AnimalsClassScraper:
         deleted_images = []
         no_image = []
 
-        for root, dirs, files in os.walk(self.dataset_path+"labels", topdown=False):
+        for root, dirs, files in os.walk(self.dataset_path+"labels/", topdown=False):
             for file in files:
                 location_file = os.path.join(root, file)
                 with open(location_file) as f:
@@ -119,9 +107,7 @@ class AnimalsClassScraper:
                 if int(label_id) in self.to_collect_label_id:
 
                     image_name = file[:-3] + "jpg"
-                    image_path = os.path.join(
-                        self.dataset_path, image_name
-                    )
+                    image_path = os.path.join(self.dataset_path, "images/"+image_name)
                     if os.path.exists(image_path):
                         deleted_images.append(image_name)
                         deleted_images_path.append(image_path)
@@ -163,7 +149,7 @@ class AnimalsClassScraper:
         deleted_images = []
         no_image = []
 
-        for root, dirs, files in os.walk(self.dataset_path+"labels", topdown=False):
+        for root, dirs, files in os.walk(self.dataset_path+"labels/", topdown=False):
             for file in files:
                 location_file = os.path.join(root, file)
                 with open(location_file) as f:
@@ -172,21 +158,19 @@ class AnimalsClassScraper:
 
                 for line in lines:
                     label_id = line.split()[0]
-                    bbox = line.split()[1::]  # !!!
+
                     if int(label_id) in self.to_collect_label_id:
 
                         image_name = file[:-3] + "jpg"
-                        image_path = os.path.join(
-                            self.dataset_path, image_name
-                        )
+                        image_path = os.path.join(self.dataset_path,"images/"+ image_name)
                         if os.path.exists(image_path):
 
 
 
                             deleted_images.append(image_name)
                             deleted_images_path.append(image_path)
-                            shutil.copy(image_path,self.dataset_path)
-
+                            for i in range(n_times) :
+                                shutil.copy(image_path,os.path.join(self.dataset_path,"images/"+ image_name[:-4]+f"({i}).jpg"))
                             count += 1
 
                         else:
@@ -194,7 +178,7 @@ class AnimalsClassScraper:
                             no_image.append(image_name)
                             count_weird += 1
 
-        print(count, "files haved been augmented. \n",
+        print(count, "files haved been upsampled. \n",
               count_weird, " labels with no images")
 
         with open(self.log_dir + "/deleted_images.txt", "w") as f:
@@ -207,8 +191,9 @@ class AnimalsClassScraper:
 
 def main():
     scraper = AnimalsClassScraper()
-    scraper.collect()
-    #scraper.remove(classes=...)
+    scraper.upsample([12],2)
+    #scraper.remove([3])
+    #scraper.augment([4])
 
 if __name__ == "__main__":
     main()

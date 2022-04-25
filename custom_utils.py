@@ -5,8 +5,11 @@ import pathlib
 import sklearn
 import numpy as np
 from  sklearn.metrics import top_k_accuracy_score
+import wandb
+#-----------------------------------------------------------------------------------
 class Experiment() :
-    def __init__(self,directory):
+    def __init__(self,directory,is_wandb=False):
+        self.is_wandb=is_wandb
         self.directory="log/"+directory
         self.weight_dir="models/models_weights/"+directory
         if not os.path.exists(self.directory):
@@ -18,6 +21,8 @@ class Experiment() :
         for f in files:
             os.remove(root+"/"+f)
 
+
+
     def log_metric(self,metric_name,value,epoch):
 
         f=open(f"{self.directory}/{metric_name}.txt","a")
@@ -26,24 +31,33 @@ class Experiment() :
         else :
             f.write(f"{epoch} , {str(value)}")
 
+        if self.is_wandb :
+            wandb.log({metric_name: value})
     def save_weights(self,model):
 
         torch.save(model.state_dict(), f"{self.weight_dir}/{model._get_name()}.pt")
 
-
+#-----------------------------------------------------------------------------------
 def set_parameter_requires_grad(model, feature_extract):
     if feature_extract:
         for param in model.parameters():
             param.requires_grad = False
+#-----------------------------------------------------------------------------------
+class preprocessing() :
+    def __init__(self,img_size,other=None):
+        self.img_size=img_size
+        self.added_transform=other
 
-
-preprocess = transforms.Compose([
-    transforms.Resize(320),
-    transforms.CenterCrop(320),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
-
+    def preprocessing(self):
+        preprocess = transforms.Compose([
+            transforms.Resize(self.img_size),
+            transforms.CenterCrop(self.img_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            self.added_transform
+        ])
+        return preprocess
+#-----------------------------------------------------------------------------------
 def collate_fn(batch):
     """
     To handle the data loading as different images may have different number
@@ -51,10 +65,8 @@ def collate_fn(batch):
     """
     return tuple(zip(*batch))
 
-
-num_classes = 14
-
-
+#-----------------------------------------------------------------------------------
+num_classes = 14 #+empty
 def top1(true, pred):
     true = np.argmax(true, axis=1)
     # labels=np.unique(true)
@@ -91,13 +103,12 @@ def recall(true, pred):
 
 metrics = {
     "f1": f1,
-
     "precision": precision,
     "recall": recall,
     "top-1": top1,
     "top-5": top5
 }
-
+#-----------------------------------------------------------------------------------
 def get_iou(bb1, bb2):
     """
     Calculate the Intersection over Union (IoU) of two bounding boxes.
