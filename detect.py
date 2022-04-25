@@ -6,7 +6,6 @@ import numpy as np
 import torch
 import tqdm
 from custom_utils import preprocess, Experiment
-import sklearn
 from sklearn.metrics import confusion_matrix
 
 from training.training import validation_loop
@@ -109,36 +108,7 @@ def main() :
 
     y_true, y_pred = answer(results[0]), answer(results[1])
 
-    # ------------defining metrics--------------------------------------------
 
-
-    def macro(true, pred):
-
-        return sklearn.metrics.f1_score(true, pred, average='macro')  # weighted??
-
-
-    def f1(true, pred):
-
-        return sklearn.metrics.f1_score(true, pred, average='weighted')  # weighted??
-
-
-    def precision(true, pred):
-
-        return sklearn.metrics.precision_score(true, pred, average='macro')
-
-
-    def recall(true, pred):
-
-        return sklearn.metrics.recall_score(true, pred, average='macro')
-
-
-    metrics = {
-        "f1": f1,
-        "macro": macro,
-        "precision": precision,
-        "recall": recall,
-
-    }
 
     for metric in metrics.keys():
         print(metric + " : ", metrics[metric](y_true, y_pred))
@@ -147,7 +117,7 @@ def main() :
     b = np.where(y_pred.astype(int) == 15, 0, 1)
     print("identification results :", np.mean(np.where(a == b, 1, 0)))
     m = confusion_matrix(y_true, y_pred, normalize="pred").round(2)
-
+    np.savetxt(f"{model._get_name()}_confusion_matrix.txt",m)
     print("avg class : ", np.mean(np.diag(m)))
     x = ['bobcat', 'opossum', 'car', 'coyote', 'raccoon', 'bird', 'dog', 'cat', 'squirrel', 'rabbit', 'skunk', 'fox',
          'rodent', 'deer', "empty"]
@@ -155,7 +125,7 @@ def main() :
 
     import plotly.figure_factory as ff
 
-    fig = ff.create_annotated_heatmap(m, x=x, y=x, annotation_text=z_text, colorscale='Viridis')
+    fig = ff.create_annotated_heatmap(m, x=x, y=x, annotation_text=z_text,colorscale="Blues")
 
     fig.update_layout(
         margin=dict(t=50, l=200),
@@ -167,6 +137,8 @@ def main() :
     )
 
     fig['data'][0]['showscale'] = True
+    import plotly.io as pio
+    pio.write_image(fig, f"model._get_name()_conf_mat.png", width=1920, height=1080)
     fig.show()
 
 if __name__ == "__main__":
