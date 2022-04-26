@@ -1,7 +1,7 @@
 #------python import------------------------------------
 
 import torch
-
+from data.animal_class_scraper import AnimalsClassScraper as acs
 import os
 import argparse
 
@@ -49,6 +49,26 @@ def main() :
     parser = init_parser()
     args = parser.parse_args()
     os.system(f"source venv/bin/activate")
+    acs=acs()
+
+    if not os.path.isdir(f"data/data_split{args.dataset}") :
+        print("We need to change our dataset")
+
+        if not os.path.isdir(f"data/data_split2") :
+            print("You need to download the dataset data split 2!\
+             Please see the jupyter notebook or README.")
+        else :
+            if args.dataset==3 :
+                #we need to upsample
+                acs.upsample(classes=[5,8,12])
+
+            else :
+                # we need to augment the data
+                acs.augment(classes=[5,8,12])
+
+
+
+
     if args.model!="yolo" :
 
         os.system(f"python train.py --model {args.model} --dataset {args.dataset} --img_size {args.img_size} --wandb {args.wandb}")
