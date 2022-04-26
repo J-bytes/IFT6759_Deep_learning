@@ -1,7 +1,7 @@
 #------python import------------------------------------
 
 import torch
-from data.animal_class_scraper import AnimalsClassScraper as acs
+from data.animal_class_scraper import AnimalsClassScraper
 import os
 import argparse
 
@@ -49,7 +49,7 @@ def main() :
     parser = init_parser()
     args = parser.parse_args()
     os.system(f"source venv/bin/activate")
-    acs=acs()
+    acs=AnimalsClassScraper()
 
     if not os.path.isdir(f"data/data_split{args.dataset}") :
         print("We need to change our dataset")
