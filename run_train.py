@@ -14,7 +14,7 @@ def init_parser() :
                         const='all',
                         type=str,
                         nargs='?',
-                        choices=["alexnet","resnext50_32x4d","vgg19"],
+                        choices=["alexnet","resnext50_32x4d","vgg19","yolo"],
                         required=True,
                         help='Choice of the model')
     parser.add_argument('--dataset',
