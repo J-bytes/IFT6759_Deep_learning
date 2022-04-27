@@ -5,9 +5,9 @@ import warnings
 import numpy as np
 import torch
 import tqdm
-from custom_utils import preprocess, Experiment
+from custom_utils import  Experiment,preprocessing
 from sklearn.metrics import confusion_matrix
-
+from  sklearn.metrics import top_k_accuracy_score
 from training.training import validation_loop
 from training.dataloaders.cct_dataloader import CustomImageDataset
 def init_argparse() :
@@ -62,10 +62,12 @@ def main() :
 
 
     #------loading test set --------------------------------------
+    prepro = preprocessing(img_size=320)
+    preprocess = prepro.preprocessing()
     if args.testset =="seen":
-        test_dataset = CustomImageDataset(f"data/data/data_split{args.dataset}/test", transform=preprocess)
+        test_dataset = CustomImageDataset(f"data/data_split{args.dataset}/test",transform=preprocess)
     if args.testset=="unseen" :
-        test_dataset = CustomImageDataset(f"data/data/test_set3/test", transform=preprocess)
+        test_dataset = CustomImageDataset(f"data/test_set3/test",transform=preprocess)
 
 
     #----------------loading model -------------------------------
@@ -107,21 +109,41 @@ def main() :
 
     def answer(v):
         v = v.numpy()
-        return np.where(np.max(v, axis=1) > 0.6, np.argmax(v, axis=1), 15)
+        return np.where(np.max(v, axis=1) > 0.6, np.argmax(v, axis=1), 14)
 
 
     y_true, y_pred = answer(results[0]), answer(results[1])
+    print(len(results),y_true.shape,y_pred.shape)
+    # -----------------------------------------------------------------------------------
+    num_classes = 15
+    import sklearn
 
 
+    def f1(true, pred):
+
+
+        return sklearn.metrics.f1_score(true, pred, average='macro')  # weighted??
+
+    def precision(true, pred):
+
+        return sklearn.metrics.precision_score(true, pred, average='macro')
+
+    def recall(true, pred):
+
+        return sklearn.metrics.recall_score(true, pred, average='macro')
+
+    metrics = {
+        "f1": f1,
+        "precision": precision,
+        "recall": recall,
+    }
 
     for metric in metrics.keys():
         print(metric + " : ", metrics[metric](y_true, y_pred))
 
-    a = np.where(y_true.astype(int) == 15, 0, 1)
-    b = np.where(y_pred.astype(int) == 15, 0, 1)
-    print("identification results :", np.mean(np.where(a == b, 1, 0)))
+    print("top-1",np.mean(np.where(y_true==y_pred,1,0)))
     m = confusion_matrix(y_true, y_pred, normalize="pred").round(2)
-    np.savetxt(f"{model._get_name()}_confusion_matrix.txt",m)
+    #np.savetxt(f"{model._get_name()}_confusion_matrix.txt",m)
     print("avg class : ", np.mean(np.diag(m)))
     x = ['bobcat', 'opossum', 'car', 'coyote', 'raccoon', 'bird', 'dog', 'cat', 'squirrel', 'rabbit', 'skunk', 'fox',
          'rodent', 'deer', "empty"]
@@ -142,7 +164,7 @@ def main() :
 
     fig['data'][0]['showscale'] = True
     import plotly.io as pio
-    pio.write_image(fig, f"model._get_name()_conf_mat.png", width=1920, height=1080)
+    pio.write_image(fig, f"{model._get_name()}_conf_mat.png", width=1920, height=1080)
     fig.show()
 
 if __name__ == "__main__":

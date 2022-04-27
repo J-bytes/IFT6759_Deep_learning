@@ -5,6 +5,7 @@ from data.animal_class_scraper import AnimalsClassScraper
 import os
 import argparse
 import shutil
+from pathlib import Path
 #----------- parse arguments----------------------------------
 def init_parser() :
     parser = argparse.ArgumentParser(description='Launch training for a specific model')
@@ -59,17 +60,17 @@ def main() :
         print("We need to change our dataset")
 
         if not os.path.isdir(f"data/data_split2") :
-            print("You need to download the dataset data split 2!\
+            raise Exception("You need to download the dataset data split 2!\
              Please see the jupyter notebook or README.")
         else :
             if args.dataset==3 :
                 #we need to upsample
                 acs.upsample(classes=[5,8,12])
-                os.renames("data/data_split2","data/data_split3")
+                os.rename("data/data_split2", "data/data_split3")
             else :
                 # we need to augment the data
                 acs.augment(classes=[5,8,12])
-                os.renames("data/data_split2", "data/data_split4")
+                os.rename("data/data_split2", "data/data_split4")
 
 
 
@@ -95,7 +96,8 @@ def main() :
          --patience 5") #add args
 
         weights_path=f"models/models_weights/yolov5m/v{args.dataset}"
-        os.mkdir(weights_path,exist_ok=True,parents=True)
-        shutil.move(f"{os.getcwd()}/models/yoov5/runs/train/exp/weights/best.pt",weights_path+"/yolov5m.pt")
+        Path(weights_path).mkdir(exist_ok=True,parents=True)
+
+        shutil.move(f"{os.getcwd()}/models/yolov5/runs/train/exp/weights/best.pt",weights_path+"/yolov5m.pt")
 if __name__=="__main__" :
     main()

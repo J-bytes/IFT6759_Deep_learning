@@ -14,7 +14,7 @@ def init_parser() :
                         const='all',
                         type=str,
                         nargs='?',
-                        choices=["alexnet","resnext50_32x4d","vgg19"],
+                        choices=["alexnet","resnext50_32x4d","vgg19","yolo"],
                         required=True,
                         help='Choice of the model')
     parser.add_argument('--dataset',
@@ -45,18 +45,18 @@ def main() :
     if args.testset=="seen" :
         test_folder = f"data/data_split{args.version}/test"
     else :
-        test_folder = "data/unseen_test_set/test"
+        test_folder = "data/test_set3/test"
     if args.model!="yolo" :
 
         os.system(f"python detect.py --model {args.model} --dataset {args.dataset} --testset {args.testset}")
 
     else :
         os.system(f"python models/yolov5/detect.py \
-            --weights models/models_weights/yolov5m/yolov5m.pt \
+            --weights {os.getcwd()}/models/models_weights/yolov5m/v{args.dataset}/yolov5m.pt \
             --img 320 --conf 0.25 \
-            --source {os.getcwd()+test_folder+'/images'} \
-            --save_txt True \
-            --save_conf \
+            --source {os.getcwd()}/{test_folder}/images \
+            --save-txt  \
+            --save-conf \
             --exist-ok")
         exp_folder="models/yolov5/runs/detect/exp/labels"
         results=yolo_testing(exp_folder,label_folder=test_folder+"/labels")
