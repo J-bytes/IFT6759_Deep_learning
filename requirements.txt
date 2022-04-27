@@ -1,13 +1,10 @@
 tensorboard
 imageio~=2.16.0
 opencv-python~=4.5.5.62
-#torch
 numpy~=1.22.2
 pandas~=1.4.1
 tqdm~=4.63.0
-imageio
 opencv-python
-#torch
 numpy
 pandas
 tqdm
@@ -20,10 +17,8 @@ PyYAML~=6.0
 wandb~=0.12.11
 utils~=1.0.1
 seaborn~=0.11.2
-#torchvision~=0.11.3+cu113
 requests~=2.27.1
 thop~=0.0.31.post2005241907
-#tensorflow~=2.8.0
 pycocotools~=2.0.4
 plotly~=5.6.0
 torch==1.10.2+cu113
