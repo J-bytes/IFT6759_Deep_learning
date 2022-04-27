@@ -54,9 +54,10 @@ def main() :
         os.system(f"python models/yolov5/detect.py \
             --weights models/models_weights/yolov5m/yolov5m.pt \
             --img 320 --conf 0.25 \
-            --source {test_folder+'/images'} \
+            --source {os.getcwd()+test_folder+'/images'} \
             --save_txt True \
-            --exist_ok True")
+            --save_conf \
+            --exist-ok")
         exp_folder="models/yolov5/runs/detect/exp/labels"
         results=yolo_testing(exp_folder,label_folder=test_folder+"/labels")
         plot(results)

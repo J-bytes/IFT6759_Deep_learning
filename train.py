@@ -14,10 +14,10 @@ from custom_utils import set_parameter_requires_grad,Experiment,preprocessing,me
 
 # -----------cuda optimization tricks-------------------------
 # DANGER ZONE !!!!!
-torch.autograd.set_detect_anomaly(False)
-torch.autograd.profiler.profile(False)
-torch.autograd.profiler.emit_nvtx(False)
-torch.backends.cudnn.benchmark = True
+# torch.autograd.set_detect_anomaly(False)
+# torch.autograd.profiler.profile(False)
+# torch.autograd.profiler.emit_nvtx(False)
+# torch.backends.cudnn.benchmark = True
 
 #----------- parse arguments----------------------------------
 def init_parser() :
@@ -48,13 +48,17 @@ def init_parser() :
                         help='width and length to resize the images to. Choose a value between 320 and 608.')
 
     parser.add_argument('--wandb',
+                        action=argparse.BooleanOptionalAction,
                         default=False,
+                        help='do you wish (and did you setup) wandb? You will need to add the project name in the initialization of wandb in train.py')
+
+    parser.add_argument('--epoch',
+                        default=50,
                         const='all',
-                        type=bool,
+                        type=int,
                         nargs='?',
-                        choices=[True,False],
                         required=False,
-                        help='True or False, do you wish (and did you setup) wandb? You will need to add the project name in the initialization of wandb in train.py')
+                        help="Number of epochs to train ; a patiance of 5 is implemented by default")
 
     return parser
 
@@ -68,8 +72,8 @@ def main() :
 
     num_classes=14
 
-    train_dataset = CustomImageDataset(f"data/data/data_split{version}/train", transform=preprocess)
-    val_dataset = CustomImageDataset(f"data/data/data_split{version}/valid", transform=preprocess)
+    train_dataset = CustomImageDataset(f"data/data_split{version}/train", transform=preprocess)
+    val_dataset = CustomImageDataset(f"data/data_split{version}/valid", transform=preprocess)
 
     criterion = torch.nn.CrossEntropyLoss()
 
@@ -82,7 +86,7 @@ def main() :
             #set_parameter_requires_grad(model, feature_extract=True)
         else :
             batch_size = 168
-        #model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, num_classes, bias=True)
+        model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, num_classes, bias=True)
 
     else :#for resnext
         model.fc = torch.nn.Linear(2048, num_classes)
@@ -118,15 +122,16 @@ def main() :
     model = model.to(device)
 
     #initialize metrics loggers
+
     if args.wandb :
         wandb.init(project='mila-prof-master-gang', tags=[args.model,args.version])
         wandb.watch(model)
 
-    experiment = Experiment(f"{model._get_name()}/v{version}",wandb=args.wandb)
+    experiment = Experiment(f"{model._get_name()}/v{version}",is_wandb=args.wandb)
 
     optimizer = torch.optim.AdamW(model.parameters())
 
-    training(model,optimizer,criterion,training_loader,validation_loader,device,minibatch_accumulate=1,epoch_max=50,patience=5,experiment=experiment,metrics=metrics)
+    training(model,optimizer,criterion,training_loader,validation_loader,device,minibatch_accumulate=1,epoch_max=args.epoch,patience=5,experiment=experiment,metrics=metrics)
 
 if __name__ == "__main__":
      main()

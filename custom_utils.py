@@ -49,13 +49,16 @@ class preprocessing() :
         self.added_transform=other
 
     def preprocessing(self):
-        preprocess = transforms.Compose([
+        temp=[
             transforms.Resize(self.img_size),
             transforms.CenterCrop(self.img_size),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            self.added_transform
-        ])
+
+        ]
+        if self.added_transform :
+            temp.append(self.added_transform)
+        preprocess = transforms.Compose(temp)
         return preprocess
 #-----------------------------------------------------------------------------------
 def collate_fn(batch):

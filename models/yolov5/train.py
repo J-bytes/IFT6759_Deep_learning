@@ -72,7 +72,7 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
         Path(opt.save_dir), opt.epochs, opt.batch_size, opt.weights, opt.single_cls, opt.evolve, opt.data, opt.cfg, \
         opt.resume, opt.noval, opt.nosave, opt.workers, opt.freeze
 
-    wandb.init(project="animal_classification", entity="selimgilon")
+    #wandb.init(project="animal_classification", entity="selimgilon")
 
     # Directories
     w = save_dir / 'weights'  # weights dir

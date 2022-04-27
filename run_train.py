@@ -4,7 +4,7 @@ import torch
 from data.animal_class_scraper import AnimalsClassScraper
 import os
 import argparse
-
+import shutil
 #----------- parse arguments----------------------------------
 def init_parser() :
     parser = argparse.ArgumentParser(description='Launch training for a specific model')
@@ -32,15 +32,19 @@ def init_parser() :
                         nargs='?',
                         required=False,
                         help='width and length to resize the images to. Choose a value between 320 and 608.')
-
-    parser.add_argument('--wandb',
+    parser.add_argument('--wandb', 
+                        
+                        action=argparse.BooleanOptionalAction,
                         default=False,
+                        help='do you wish (and did you setup) wandb? You will need to add the project name in the initialization of wandb in train.py')
+
+    parser.add_argument('--epoch',
+                        default=50,
                         const='all',
-                        type=bool,
+                        type=int,
                         nargs='?',
-                        choices=[True,False],
                         required=False,
-                        help='True or False, do you wish (and did you setup) wandb? You will need to add the project name in the initialization of wandb in train.py')
+                        help="Number of epochs to train ; a patiance of 5 is implemented by default")
 
     return parser
 
@@ -61,29 +65,37 @@ def main() :
             if args.dataset==3 :
                 #we need to upsample
                 acs.upsample(classes=[5,8,12])
-
+                os.renames("data/data_split2","data/data_split3")
             else :
                 # we need to augment the data
                 acs.augment(classes=[5,8,12])
+                os.renames("data/data_split2", "data/data_split4")
 
 
 
 
     if args.model!="yolo" :
-
-        os.system(f"python train.py --model {args.model} --dataset {args.dataset} --img_size {args.img_size} --wandb {args.wandb}")
+        wandb_arg= "--wandb" if args.wandb else "--no-wandb"
+        os.system(f"python train.py --model {args.model} --dataset {args.dataset} --img_size {args.img_size} {wandb_arg} --epoch {args.epoch}")
 
     else :
-        data_folder=f"data/data_split{args.dataset}/train"
-        device= "cuda" if torch.cuda.is_available() else "cpu"
-        os.system(f"python models/yolov5/train.py \
+        data_folder=os.path.join(os.getcwd(),f"data/data_split{args.dataset}/data_split2.yaml")
+        device= "cuda:0" if torch.cuda.is_available() else "cpu"
+        os.system(f"python {os.getcwd()}/models/yolov5/train.py \
         --img 320 \
-        --batch-size -1 \
-        --epoch 50 \
+        --batch-size 32 \
+        --epoch {args.epoch} \
         --workers 4 \
         --name exp \
         --weights yolov5m.pt \
         --device {device} \
-        --exist-ok True --data {data_folder}") #add args
+        --exist-ok \
+        --nosave \
+        --data {data_folder} \
+         --patience 5") #add args
+
+        weights_path=f"models/models_weights/yolov5m/v{args.dataset}"
+        os.mkdir(weights_path,exist_ok=True,parents=True)
+        shutil.move(f"{os.getcwd()}/models/yoov5/runs/train/exp/weights/best.pt",weights_path+"/yolov5m.pt")
 if __name__=="__main__" :
     main()

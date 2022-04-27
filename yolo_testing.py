@@ -26,6 +26,12 @@ from sklearn.metrics import top_k_accuracy_score
 
 
 def yolo_testing(exp_folder,label_folder) :
+    """
+
+    :param exp_folder: the folder of the ouptut labels of yolo's detect.py code
+    :param label_folder: The folder of the true labels
+    :return: A concatenated tensor of the predicted classes and true classes
+    """
     mapping = {}
     for file in os.listdir(label_folder):
         file_id = file.split("_")[0]
