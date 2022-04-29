@@ -48,8 +48,14 @@ class CustomImageDataset(Dataset):
 
         label_file=f"{self.img_dir}/labels/{keyname[:-3]}txt"
         if os.path.exists(label_file) :
+
             with open(label_file) as f:
-                category_id = f.readlines()[0].split()[0]
+                a=f.readlines()
+                if len(a)>0 :
+
+                    category_id = a[0].split()[0]
+                else :
+                    category_id=14
         else :
             category_id = 14  # the image is empty
 

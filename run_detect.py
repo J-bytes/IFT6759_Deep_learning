@@ -43,7 +43,7 @@ def main() :
     args = parser.parse_args()
     os.system(f"source venv/bin/activate")
     if args.testset=="seen" :
-        test_folder = f"data/data_split{args.version}/test"
+        test_folder = f"data/data_split{args.dataset}/test"
     else :
         test_folder = "data/test_set3/test"
     if args.model!="yolo" :
@@ -52,11 +52,10 @@ def main() :
 
     else :
         os.system(f"python models/yolov5/detect.py \
-            --weights {os.getcwd()}/models/models_weights/yolov5m/v{args.dataset}/yolov5m.pt \
-            --img 320 --conf 0.25 \
+            --weights {os.getcwd()}/models/models_weights/yolov5m/v{args.dataset}/best.pt \
+            --img 320  \
             --source {os.getcwd()}/{test_folder}/images \
             --save-txt  \
-            --save-conf \
             --exist-ok")
         exp_folder="models/yolov5/runs/detect/exp/labels"
         results=yolo_testing(exp_folder,label_folder=test_folder+"/labels")

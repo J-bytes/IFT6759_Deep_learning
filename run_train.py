@@ -6,6 +6,8 @@ import os
 import argparse
 import shutil
 from pathlib import Path
+import yaml
+import sys
 #----------- parse arguments----------------------------------
 def init_parser() :
     parser = argparse.ArgumentParser(description='Launch training for a specific model')
@@ -81,6 +83,21 @@ def main() :
 
     else :
         data_folder=os.path.join(os.getcwd(),f"data/data_split{args.dataset}/data_split2.yaml")
+
+
+        #update yaml
+        if  not os.path.exists(data_folder) :
+            dict={}
+            dict["nc"]=14
+            dict["train"] = os.getcwd() + f"/data/data_split{args.dataset}/train"
+            dict["val"] = os.getcwd() + f"/data/data_split{args.dataset}/valid"
+            dict["classes"]=["bobcat", "opossum", "car", "coyote", "raccoon", "bird", "dog", "cat", "squirrel", "rabbit", "skunk", "fox",
+             "rodent", "deer"]
+
+            with open(data_folder, 'w') as file:
+                yaml.dump(dict, file)
+
+
         device= "cuda:0" if torch.cuda.is_available() else "cpu"
         os.system(f"python {os.getcwd()}/models/yolov5/train.py \
         --img 320 \
@@ -91,13 +108,12 @@ def main() :
         --weights yolov5m.pt \
         --device {device} \
         --exist-ok \
-        --nosave \
         --data {data_folder} \
          --patience 5") #add args
 
         weights_path=f"models/models_weights/yolov5m/v{args.dataset}"
         Path(weights_path).mkdir(exist_ok=True,parents=True)
 
-        shutil.move(f"{os.getcwd()}/models/yolov5/runs/train/exp/weights/best.pt",weights_path+"/yolov5m.pt")
+        shutil.move(f"{os.getcwd()}/models/yolov5/runs/train/exp/weights/best.pt",weights_path+"/best.pt")
 if __name__=="__main__" :
     main()
