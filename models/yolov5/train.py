@@ -35,8 +35,6 @@ from tqdm import tqdm
 
 
 
-torch.autograd.set_detect_anomaly(True)
-
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
 if str(ROOT) not in sys.path:

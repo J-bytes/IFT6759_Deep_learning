@@ -101,7 +101,7 @@ def main() :
 
         os.system(f"python {os.getcwd()}/models/yolov5/train.py \
         --img 320 \
-        --batch-size 8 \
+        --batch-size 64 \
         --epoch {args.epoch} \
         --name exp \
         --exist-ok \
