@@ -22,16 +22,14 @@ def init_parser() :
                         const='all',
                         type=str,
                         nargs='?',
-                        choices=['1', '2', '3',"4"],
+                        choices=['2', '3',"4"],
                         required=True,
-                        help='Version of the dataset')
+                        help='Version of the dataset ; Please see our report for more details')
 
 
     parser.add_argument("-t", '--testset',
                         default="unseen",
-
                         type=str,
-
                         choices=["seen", "unseen"],
                         required=True,
                         help='Choice of the test set 1-seen locations 2-unseen locations')
@@ -52,9 +50,9 @@ def main() :
 
     else :
         os.system(f"python models/yolov5/detect.py \
-            --weights {os.getcwd()}/models/models_weights/yolov5m/v{args.dataset}/best.pt \
+            --weights {os.join(os.getcwd(),'models','models_weights','yolov5m','v'+args.dataset,'best.pt')} \
             --img 320  \
-            --source {os.getcwd()}/{test_folder}/images \
+            --source {os.join(os.getcwd(),{test_folder},'images')} \
             --save-txt  \
             --exist-ok")
         exp_folder="models/yolov5/runs/detect/exp/labels"
