@@ -67,6 +67,7 @@ def yolo_testing(exp_folder,label_folder) :
 
         if os.path.exists(exp_folder + "/" + file) :
             label = np.loadtxt(exp_folder + "/" + file, unpack=True)
+            label=label.flatten()[0]
         else :
             label=14
 

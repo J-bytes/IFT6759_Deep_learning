@@ -50,9 +50,9 @@ def main() :
 
     else :
         os.system(f"python models/yolov5/detect.py \
-            --weights {os.join(os.getcwd(),'models','models_weights','yolov5m','v'+args.dataset,'best.pt')} \
+            --weights {os.path.join(os.getcwd(),'models','models_weights','yolov5m','v'+args.dataset,'best.pt')} \
             --img 320  \
-            --source {os.join(os.getcwd(),{test_folder},'images')} \
+            --source {os.path.join(os.getcwd(),test_folder,'images')} \
             --save-txt  \
             --exist-ok")
         exp_folder="models/yolov5/runs/detect/exp/labels"
