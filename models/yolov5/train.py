@@ -33,6 +33,10 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import SGD, Adam, AdamW, lr_scheduler
 from tqdm import tqdm
 
+
+
+torch.autograd.set_detect_anomaly(True)
+
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
 if str(ROOT) not in sys.path:
@@ -329,13 +333,13 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
                     imgs = nn.functional.interpolate(imgs, size=ns, mode='bilinear', align_corners=False)
 
             # Forward
-            with amp.autocast(enabled=cuda):
-                pred = model(imgs)  # forward
-                loss, loss_items = compute_loss(pred, targets.to(device))  # loss scaled by batch_size
-                if RANK != -1:
-                    loss *= WORLD_SIZE  # gradient averaged between devices in DDP mode
-                if opt.quad:
-                    loss *= 4.
+            #with amp.autocast(enabled=cuda):
+            pred = model(imgs)  # forward
+            loss, loss_items = compute_loss(pred, targets.to(device))  # loss scaled by batch_size
+            if RANK != -1:
+                loss *= WORLD_SIZE  # gradient averaged between devices in DDP mode
+            if opt.quad:
+                loss *= 4.
 
             # Backward
             scaler.scale(loss).backward()

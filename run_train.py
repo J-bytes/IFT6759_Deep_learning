@@ -6,6 +6,8 @@ import os
 import argparse
 import shutil
 from pathlib import Path
+import yaml
+import sys
 #----------- parse arguments----------------------------------
 def init_parser() :
     parser = argparse.ArgumentParser(description='Launch training for a specific model')
@@ -23,21 +25,21 @@ def init_parser() :
                         const='all',
                         type=str,
                         nargs='?',
-                        choices=['1', '2', '3',"4"],
+                        choices=['2', '3',"4"],
                         required=True,
-                        help='Version of the dataset')
+                        help='Version of the dataset ; see our report for more details')
     parser.add_argument('--img_size',
                         default=320,
                         const='all',
                         type=int,
                         nargs='?',
                         required=False,
-                        help='width and length to resize the images to. Choose a value between 320 and 608.')
-    parser.add_argument('--wandb', 
-                        
+                        help='width and length to resize the images to. Choose a value between 320 and 608. Still in development ; use at your own risk')
+    parser.add_argument('--wandb',
+
                         action=argparse.BooleanOptionalAction,
                         default=False,
-                        help='do you wish (and did you setup) wandb? You will need to add the project name in the initialization of wandb in train.py')
+                        help='do you wish (and did you setup) wandb? You will need to add the project name in the initialization of wandb in train.py Please note that wansb is currently not available with yolo')
 
     parser.add_argument('--epoch',
                         default=50,
@@ -81,23 +83,35 @@ def main() :
 
     else :
         data_folder=os.path.join(os.getcwd(),f"data/data_split{args.dataset}/data_split2.yaml")
-        device= "cuda:0" if torch.cuda.is_available() else "cpu"
+
+
+        #update yaml
+        if  not os.path.exists(data_folder) :
+            dict={}
+            dict["nc"]=14
+            dict["train"] = os.getcwd() + f"/data/data_split{args.dataset}/train"
+            dict["val"] = os.getcwd() + f"/data/data_split{args.dataset}/valid"
+            dict["names"]=["bobcat", "opossum", "car", "coyote", "raccoon", "bird", "dog", "cat", "squirrel", "rabbit", "skunk", "fox",
+             "rodent", "deer"]
+
+            with open(data_folder, 'w') as file:
+                yaml.dump(dict, file)
+
+
+
         os.system(f"python {os.getcwd()}/models/yolov5/train.py \
         --img 320 \
-        --batch-size 32 \
+        --batch-size 8 \
         --epoch {args.epoch} \
-        --workers 4 \
         --name exp \
-        --weights yolov5m.pt \
-        --device {device} \
         --exist-ok \
-        --nosave \
         --data {data_folder} \
          --patience 5") #add args
 
         weights_path=f"models/models_weights/yolov5m/v{args.dataset}"
         Path(weights_path).mkdir(exist_ok=True,parents=True)
 
-        shutil.move(f"{os.getcwd()}/models/yolov5/runs/train/exp/weights/best.pt",weights_path+"/yolov5m.pt")
+        shutil.move(f"{os.getcwd()}/models/yolov5/runs/train/exp/weights/best.pt",weights_path+"/best.pt")
+
 if __name__=="__main__" :
     main()

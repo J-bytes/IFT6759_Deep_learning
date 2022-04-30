@@ -18,5 +18,6 @@ we trained various models (VGG19, AlexNet, ResNext50, EfficientDet2, Yolo v5)
 to perform either classification or detection.
 
 # How to use?
+ Please note that python >=3.9 is required.
  We provided a guide on how to train and detect with our models in a jupyter notebook (see main.ipynb)
 
