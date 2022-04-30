@@ -1,16 +1,9 @@
 tensorboard
 imageio~=2.16.0
 opencv-python~=4.5.5.62
-#torch
 numpy~=1.22.2
 pandas~=1.4.1
 tqdm~=4.63.0
-imageio
-opencv-python
-#torch
-numpy
-pandas
-tqdm
 argparse~=1.4.0
 #torch~=1.10.2+cu113
 matplotlib~=3.5.1
