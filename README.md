@@ -21,7 +21,7 @@ to perform either classification or detection.
  Please note that python >=3.9 is required.
  We provided a guide on how to train and detect with our models in a jupyter notebook (see main.ipynb)
 
-
+# Demo 
 
 https://user-images.githubusercontent.com/43852124/166219438-26360219-722c-45d3-b70a-eabc8984646f.mp4
 
